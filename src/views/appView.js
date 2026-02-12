@@ -27,8 +27,7 @@ export function renderApp({ state, actions }) {
   const newGameMenuItems = DIFFICULTIES.map((difficulty) =>
     h('button', {
       type: 'button',
-      className:
-        'w-full px-3 py-2 sm:px-4 sm:py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 text-sm sm:text-base',
+      className: 'menu-item',
       onClick: () => {
         if (difficulty.name === 'Custom') {
           actions.openCustomMode();
@@ -43,8 +42,8 @@ export function renderApp({ state, actions }) {
         });
       },
     }, [
-      h('div', { className: 'font-medium' }, [difficulty.name]),
-      h('div', { className: 'text-xs sm:text-sm text-gray-500 dark:text-gray-400' }, [
+      h('div', { className: 'menu-item__title' }, [difficulty.name]),
+      h('div', { className: 'menu-item__meta' }, [
         difficulty.name === 'Custom'
           ? 'Configure board size and move limit'
           : `${difficulty.rows}×${difficulty.columns}`,
@@ -53,16 +52,14 @@ export function renderApp({ state, actions }) {
   );
 
   const root = h('div', {
-    className:
-      'min-h-dvh bg-linear-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 flex flex-col transition-colors duration-200',
+    className: 'app-screen app-screen--game',
   });
 
   root.appendChild(
     h('header', {
-      className:
-        'sticky top-0 z-20 shrink-0 bg-white/95 dark:bg-gray-800/95 border-b border-gray-200 dark:border-gray-700 shadow-lg backdrop-blur transition-colors duration-200',
+      className: 'app-header-shell',
     }, [
-      h('div', { className: 'max-w-full mx-auto px-2 py-0' }, [
+      h('div', { className: 'app-header-inner' }, [
         renderGameHeader({
           boardName: board.name,
           stepsLeft,
@@ -84,10 +81,10 @@ export function renderApp({ state, actions }) {
   );
 
   root.appendChild(
-    h('div', { className: 'flex-1 min-h-0 p-2 sm:p-4 overflow-auto' }, [
-      h('div', { className: 'max-w-4xl mx-auto min-h-0 h-full flex flex-col' }, [
-        h('div', { className: 'flex-1 min-h-0 flex items-center justify-center' }, [
-          h('div', { className: 'w-full h-full min-h-0' }, [renderGameBoard({ board })]),
+    h('div', { className: 'app-main' }, [
+      h('div', { className: 'app-content' }, [
+        h('div', { className: 'app-board-area' }, [
+          h('div', { className: 'app-board-inner' }, [renderGameBoard({ board })]),
         ]),
 
         renderColorKeyboard({

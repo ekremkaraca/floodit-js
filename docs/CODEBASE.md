@@ -100,11 +100,8 @@ This tradeoff is acceptable at current app size and is already tracked as a pote
 
 ## Styling Pipeline
 
-- Source Tailwind file: `src/styles/tailwind.css`.
-- Build script: `scripts/tailwind-build.ts`.
-  - Scans `src/**/*.{html,js}` for class-like tokens.
-  - Compiles Tailwind and writes `src/styles/app.css`.
-  - In watch mode, ignores `app.css` writes to prevent rebuild loops.
+- Styling is maintained directly in `src/styles/app.css`.
+- There is no external CSS preprocessor step in dev/build scripts.
 - `src/main.js` imports `src/styles/app.css`.
 
 ## Keyboard Shortcuts

@@ -14,66 +14,62 @@ export function renderGameHeader({
   const percentageRemaining = (stepsLeft / safeMaxSteps) * 100;
   const stepsColorClass =
     percentageRemaining > 50
-      ? "text-green-600 dark:text-green-400"
+      ? "steps-tone--good"
       : percentageRemaining > 25
-        ? "text-yellow-600 dark:text-yellow-400"
-        : "text-red-600 dark:text-red-400";
+        ? "steps-tone--warn"
+        : "steps-tone--danger";
 
   const progressPercentage = (currentStep / safeMaxSteps) * 100;
 
   return h(
     "nav",
     {
-      className:
-        "bg-white dark:bg-gray-800 rounded-lg shadow-md px-2 sm:px-3 py-1.5 sm:py-2 transition-colors duration-200",
+      className: "game-header",
     },
     [
-      h("div", { className: "max-w-4xl mx-auto" }, [
+      h("div", { className: "game-header__inner" }, [
         h(
           "div",
           {
-            className:
-              "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4",
+            className: "game-header__row",
           },
           [
             h(
               "div",
-              { className: "flex items-center gap-2 sm:gap-3 flex-1 min-w-0" },
+              { className: "game-header__main" },
               [
                 h("div", {}, [
                   h(
                     "h1",
                     {
-                      className:
-                        "text-base sm:text-lg font-bold text-gray-800 dark:text-gray-100 truncate",
+                      className: "game-header__title",
                     },
                     [boardName],
                   ),
                 ]),
 
-                h("div", { className: "flex items-center gap-1 sm:hidden" }, [
+                h("div", { className: "game-header__steps-mobile" }, [
                   h(
                     "div",
-                    { className: `text-sm font-bold ${stepsColorClass}` },
+                    { className: `steps-count ${stepsColorClass}` },
                     [String(stepsLeft)],
                   ),
                   h(
                     "div",
-                    { className: "text-xs text-gray-600 dark:text-gray-400" },
+                    { className: "steps-label" },
                     ["left"],
                   ),
                 ]),
 
                 h(
                   "div",
-                  { className: "hidden sm:flex flex-1 max-w-xs items-center" },
+                  { className: "game-header__progress-wrap" },
                   [
-                    h("div", { className: "w-full" }, [
+                    h("div", { className: "progress" }, [
                       h(
                         "div",
                         {
-                          className:
-                            "flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1 px-2",
+                          className: "progress__meta",
                         },
                         [
                           h("span", { className: stepsColorClass }, [
@@ -85,13 +81,11 @@ export function renderGameHeader({
                       h(
                         "div",
                         {
-                          className:
-                            "w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden",
+                          className: "progress__track",
                         },
                         [
                           h("div", {
-                            className:
-                              "h-full bg-linear-to-r from-blue-500 to-purple-500 transition-all duration-300 ease-out",
+                            className: "progress__fill",
                             style: { width: `${progressPercentage}%` },
                           }),
                         ],
@@ -105,26 +99,23 @@ export function renderGameHeader({
             h(
               "div",
               {
-                className:
-                  "flex items-center justify-end gap-1 sm:gap-2 shrink-0",
+                className: "game-header__actions",
               },
               [
-                h("details", { className: "relative" }, [
+                h("details", { className: "menu menu--newgame" }, [
                   h(
                     "summary",
                     {
-                      className:
-                        "list-none inline-flex h-10 sm:h-11 items-center justify-center px-3 sm:px-4 bg-linear-to-r from-green-500 to-emerald-500 text-white rounded-lg transition-all duration-200 font-semibold shadow-md text-sm sm:text-base hover:from-green-600 hover:to-emerald-600 cursor-pointer active:scale-95",
+                      className: "btn btn--new menu__trigger",
                     },
                     ["New ▼"],
                   ),
                   h(
                     "div",
                     {
-                      className:
-                        "absolute top-full left-0 mt-1 sm:mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-10 min-w-full sm:min-w-50",
+                      className: "menu__panel",
                     },
-                    [h("div", { className: "py-1 sm:py-2" }, onNewGame)],
+                    [h("div", { className: "menu__list" }, onNewGame)],
                   ),
                 ]),
 
@@ -133,8 +124,7 @@ export function renderGameHeader({
                   {
                     type: "button",
                     onClick: onReset,
-                    className:
-                      "inline-flex h-10 sm:h-11 items-center justify-center px-3 sm:px-4 bg-linear-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-semibold shadow-md text-sm sm:text-base active:scale-95",
+                    className: "btn btn--neutral",
                   },
                   ["Reset"],
                 ),
@@ -144,8 +134,7 @@ export function renderGameHeader({
                   {
                     type: "button",
                     onClick: onToggleDarkMode,
-                    className:
-                      "inline-flex h-10 sm:h-11 w-10 sm:w-11 items-center justify-center bg-linear-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-semibold shadow-md active:scale-95",
+                    className: "btn btn--neutral btn--icon",
                     title: "Toggle dark mode",
                     "aria-label": "Toggle dark mode",
                   },
@@ -161,8 +150,7 @@ export function renderGameHeader({
                         "https://github.com/ekremkaraca/floodit-js",
                         "_blank",
                       ),
-                    className:
-                      "inline-flex h-10 sm:h-11 w-10 sm:w-11 items-center justify-center bg-linear-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-semibold shadow-md active:scale-95",
+                    className: "btn btn--neutral btn--icon",
                     title: "View source code on GitHub",
                     "aria-label": "View source code on GitHub",
                   },

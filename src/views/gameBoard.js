@@ -7,7 +7,7 @@ const COLOR_HEX = Object.fromEntries(
 
 export function renderGameBoard({ board }) {
   const wrapper = h('div', {
-    className: 'flex justify-center items-center w-full h-full min-h-0 p-2 sm:p-4',
+    className: 'board-wrap',
   });
 
   const isDesktop = window.innerWidth >= 1024;
@@ -32,7 +32,7 @@ export function renderGameBoard({ board }) {
   };
 
   const grid = h('div', {
-    className: 'grid gap-0 bg-gray-200 rounded-lg overflow-hidden shadow-lg w-full',
+    className: 'board-grid',
     style: sizeStyle,
   });
 
@@ -41,7 +41,7 @@ export function renderGameBoard({ board }) {
       const color = board.matrix[r][c];
       grid.appendChild(
         h('div', {
-          className: 'border border-gray-300 transition-all duration-300 hover:opacity-80',
+          className: 'board-cell',
           style: {
             backgroundColor: COLOR_HEX[color] || '#9ca3af',
           },

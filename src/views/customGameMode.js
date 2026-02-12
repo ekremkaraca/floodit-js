@@ -6,13 +6,11 @@ export function renderCustomGameMode({ actions }) {
   const settings = state.customSettings;
 
   const root = h('div', {
-    className:
-      'min-h-dvh bg-linear-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4 transition-colors duration-200',
+    className: 'app-screen app-screen--centered',
   });
 
   const panel = h('div', {
-    className:
-      'bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 max-w-md w-full transition-colors duration-200',
+    className: 'panel panel--custom',
   });
 
   function render() {
@@ -20,8 +18,7 @@ export function renderCustomGameMode({ actions }) {
 
     panel.appendChild(
       h('h2', {
-        className:
-          'text-3xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100',
+        className: 'panel__title panel__title--md',
       }, ['Custom Game Mode']),
     );
 
@@ -30,9 +27,9 @@ export function renderCustomGameMode({ actions }) {
     const moveLimit = settings.moveLimit;
 
     panel.appendChild(
-      h('div', { className: 'space-y-6' }, [
+      h('div', { className: 'custom-form' }, [
         h('div', {}, [
-          h('label', { className: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2' }, [
+          h('label', { className: 'form-label' }, [
             `Board Size: ${boardSize}×${boardSize}`,
           ]),
           h('input', {
@@ -40,9 +37,8 @@ export function renderCustomGameMode({ actions }) {
             min: '5',
             max: '25',
             value: String(boardSize),
-            className:
-              'w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-blue-500',
-            onInput: (e) => {
+            className: 'range-slider',
+            onChange: (e) => {
               const n = Number(e.target.value);
               if (Number.isFinite(n)) {
                 settings.boardSize = Math.min(25, Math.max(5, n));
@@ -50,38 +46,36 @@ export function renderCustomGameMode({ actions }) {
               }
             },
           }),
-          h('div', { className: 'flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1' }, [
+          h('div', { className: 'range-labels' }, [
             h('span', {}, ['5×5']),
             h('span', {}, ['25×25']),
           ]),
         ]),
 
         h('div', {}, [
-          h('div', { className: 'flex items-center justify-between mb-2' }, [
-            h('label', { className: 'text-sm font-medium text-gray-700 dark:text-gray-300' }, [
+          h('div', { className: 'form-row' }, [
+            h('label', { className: 'form-label form-label--compact' }, [
               'Custom Move Limit',
             ]),
             h('button', {
               type: 'button',
-              className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                customMoveLimit ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
-              }`,
+              className: `switch ${customMoveLimit ? 'switch--on' : ''}`,
+              'aria-label': 'Toggle custom move limit',
+              'aria-pressed': customMoveLimit ? 'true' : 'false',
               onClick: () => {
                 settings.customMoveLimit = !settings.customMoveLimit;
                 render();
               },
             }, [
               h('span', {
-                className: `inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  customMoveLimit ? 'translate-x-6' : 'translate-x-1'
-                }`,
+                className: `switch__thumb ${customMoveLimit ? 'switch__thumb--on' : ''}`,
               }),
             ]),
           ]),
 
           customMoveLimit
-            ? h('div', { className: 'mt-3' }, [
-                h('label', { className: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2' }, [
+            ? h('div', { className: 'custom-form__nested' }, [
+                h('label', { className: 'form-label' }, [
                   `Move Limit: ${moveLimit}`,
                 ]),
                 h('input', {
@@ -89,9 +83,8 @@ export function renderCustomGameMode({ actions }) {
                   min: '5',
                   max: '100',
                   value: String(moveLimit),
-                  className:
-                    'w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-blue-500',
-                  onInput: (e) => {
+                  className: 'range-slider',
+                  onChange: (e) => {
                     const n = Number(e.target.value);
                     if (Number.isFinite(n)) {
                       settings.moveLimit = Math.min(100, Math.max(5, n));
@@ -99,7 +92,7 @@ export function renderCustomGameMode({ actions }) {
                     }
                   },
                 }),
-                h('div', { className: 'flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1' }, [
+                h('div', { className: 'range-labels' }, [
                   h('span', {}, ['5']),
                   h('span', {}, ['100']),
                 ]),
@@ -107,16 +100,16 @@ export function renderCustomGameMode({ actions }) {
             : null,
         ]),
 
-        h('div', { className: 'bg-gray-50 dark:bg-gray-700 rounded-lg p-4' }, [
-          h('h3', { className: 'text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2' }, [
+        h('div', { className: 'settings-card' }, [
+          h('h3', { className: 'settings-card__title' }, [
             'Game Settings',
           ]),
-          h('div', { className: 'space-y-1 text-sm text-gray-600 dark:text-gray-400' }, [
+          h('div', { className: 'settings-card__body' }, [
             h('div', {}, [`Board: ${boardSize}×${boardSize} (${boardSize * boardSize} cells)`]),
             h('div', {}, [
               `Move Limit: ${customMoveLimit ? moveLimit : 'Auto-calculated'}`,
               !customMoveLimit
-                ? h('span', { className: 'text-xs text-gray-500 dark:text-gray-500 ml-1' }, [
+                ? h('span', { className: 'settings-card__note' }, [
                     `(≈${calculateMaxSteps({ rows: boardSize })} moves)`,
                   ])
                 : null,
@@ -127,17 +120,15 @@ export function renderCustomGameMode({ actions }) {
     );
 
     panel.appendChild(
-      h('div', { className: 'flex gap-3 mt-8' }, [
+      h('div', { className: 'action-row action-row--split' }, [
         h('button', {
           type: 'button',
-          className:
-            'flex-1 px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200 font-semibold shadow-md',
+          className: 'btn btn--neutral btn--block',
           onClick: () => actions.closeCustomMode(),
         }, ['Cancel']),
         h('button', {
           type: 'button',
-          className:
-            'flex-1 px-4 py-3 bg-linear-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200 font-semibold shadow-md',
+          className: 'btn btn--primary btn--block',
           onClick: () => {
             actions.startCustomGame({
               boardSize: settings.boardSize,

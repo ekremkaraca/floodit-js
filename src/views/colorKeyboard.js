@@ -3,17 +3,21 @@ import { h } from './dom.js';
 export function renderColorKeyboard({ colors, selectedColor, disabled, onColorSelect, board }) {
   const boardSize = board ? board.rows * board.columns : 0;
 
-  const padding =
-    boardSize <= 36 ? 'p-6 sm:p-8' : boardSize <= 100 ? 'p-4 sm:p-6' : 'p-3 sm:p-4';
+  const paddingClass =
+    boardSize <= 36
+      ? 'keyboard-wrap--large'
+      : boardSize <= 100
+        ? 'keyboard-wrap--medium'
+        : 'keyboard-wrap--small';
 
   const keyboardWidth = Math.max(320, Math.min(window.innerWidth * 0.92, 540));
   const columns = keyboardWidth < 420 ? 3 : Math.min(colors.length, 6);
   const gap = boardSize > 0 && boardSize <= 100 ? 10 : 8;
   const totalGap = gap * (columns - 1);
 
-  const container = h('div', { className: `flex justify-center ${padding}` });
+  const container = h('div', { className: `keyboard-wrap ${paddingClass}` });
   const grid = h('div', {
-    className: 'flex flex-wrap',
+    className: 'keyboard-grid',
     style: {
       gap: `${gap}px`,
       maxWidth: `${columns * 88 + totalGap}px`,
@@ -49,9 +53,9 @@ export function renderColorKeyboard({ colors, selectedColor, disabled, onColorSe
         'aria-label': `Select ${color.name} color`,
         disabled,
         className: [
-          'rounded-lg border-4 transition-all duration-200 transform',
-          isSelected ? 'border-gray-800 scale-110 shadow-lg' : 'border-gray-300 hover:scale-105',
-          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+          'color-key',
+          isSelected ? 'is-selected' : '',
+          disabled ? 'is-disabled' : '',
         ].join(' '),
         style: {
           width: `${size}px`,

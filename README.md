@@ -22,10 +22,11 @@
 
 ### Controls
 
-- **Color Selection**: Click color buttons or use keyboard shortcuts (1-6)
+- **Color Selection**: Click/tap color buttons in the keyboard at the bottom
 - **New Game**: Click "New Game" dropdown and select difficulty
 - **Reset**: Click "Reset" to restart the current board
 - **Dark Mode**: Toggle with the moon/sun icon
+- **Keyboard Shortcuts**: `Alt+Shift+R` (reset), `Alt+Shift+N` (new round), `Alt+Shift+Q` (quit)
 
 ## Game Modes
 
@@ -42,7 +43,7 @@
 ## Tech Stack
 - Bun (`Bun.serve`) for runtime/server
 - Vanilla JavaScript (ES modules) for frontend
-- Tailwind CSS v4 via `scripts/tailwind-build.ts`
+- Custom CSS (`src/styles/app.css`)
 
 ## Project Structure
 - `src/engine/game.js`: core game logic (board init, flood, win/loss)
@@ -88,6 +89,10 @@ bun run preview
 ### Latest Updates
 - Improved Custom difficulty labeling (removed misleading `0×0` UI text).
 - Simplified confirm dialog close flow to avoid redundant close calls.
+- Removed Tailwind dependency and build tooling in favor of project-owned CSS.
+- Migrated view styling to semantic classes and rebuilt `src/styles/app.css`.
+- Added mobile/narrow-screen UI polish for header actions and modal touch ergonomics.
+- Fixed Custom Mode range slider behavior for board sizes above `10`.
 - Kept documentation aligned in `docs/PLAN.md`.
 
 ## Roadmap (Short)

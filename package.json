@@ -3,12 +3,10 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun ./scripts/tailwind-build.ts --watch & bun --hot ./server.ts",
-    "build": "bun ./scripts/tailwind-build.ts --minify && bun build ./src/index.html --outdir ./dist --minify",
-    "preview": "bun ./scripts/tailwind-build.ts --minify && NODE_ENV=production bun ./server.ts"
+    "dev": "bun --hot ./server.ts",
+    "build": "bun build ./src/index.html --outdir ./dist --minify",
+    "preview": "NODE_ENV=production bun ./server.ts"
   },
-  "devDependencies": {
-    "tailwindcss": "^4.1.18"
-  },
+  "devDependencies": {},
   "peerDependencies": {}
 }
