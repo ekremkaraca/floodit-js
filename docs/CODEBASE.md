@@ -24,17 +24,20 @@ There is no framework runtime. Rendering is plain DOM creation using a helper fu
 
 - `src/engine/game.js`
   - Pure game rules and board operations.
-  - Defines color set (`DEFAULT_COLORS`) and preset difficulties (`DIFFICULTIES`).
+  - Defines color set (`DEFAULT_COLORS`), seed sentinel (`AUTO_GENERATE_SEED`), and preset difficulties (`DIFFICULTIES`).
   - Exposes board creation, flood fill, step counting, win checks.
+  - Uses shared JSDoc type contracts from `src/types/game.js`.
 
 - `src/state/store.js`
   - Tiny pub/sub store with `getState`, `setState`, `update`, and `subscribe`.
+  - Includes no-op guards: `setState`/`update` do not emit if the next state reference is unchanged.
   - No middleware, no async queue, no selector system.
 
 - `src/actions/gameActions.js`
   - Orchestrates state transitions for all user intents.
   - Bridges the pure engine with UI state (modals, dark mode, current selection).
   - Returns game progression metadata from `makeMove`.
+  - Includes `setCustomSettings` for immutable custom-mode updates via store.
 
 - `src/views/*`
   - Stateless render functions that build DOM nodes from `{ state, actions }` or explicit props.
@@ -85,18 +88,32 @@ Reset/new/quit flows use the shared confirm dialog:
 2. If user confirms: `confirmPendingAction` executes callback then clears dialog state.
 3. If user cancels: `closeConfirmDialog` clears callback without side effects.
 
+### Reset Behavior
+
+- `resetGame` keeps board dimensions and move limit, but intentionally generates a fresh random board.
+- This is implemented by passing `AUTO_GENERATE_SEED` into `initializeBoard`.
+- If deterministic replay is needed, pass an explicit numeric seed to `startNewGame`/`startCustomGame`.
+
 ## Rendering Strategy
 
-Current rendering strategy intentionally remounts the full app on each state change:
+Current rendering strategy uses a hybrid approach:
 
-- `store.subscribe(() => mount())` in `src/main.js`.
+- App tree is still fully remounted from state in `src/main.js`.
+- Remount is requestAnimationFrame-batched (`scheduleMount`) to avoid repeated remounts in the same frame.
 - `mount` clears `#app` and appends a fresh tree from `renderApp`.
 
-Tradeoff:
-- Simpler mental model and fewer partial-update bugs.
-- More DOM churn than targeted updates.
+Layout-sensitive components self-adjust after mount:
 
-This tradeoff is acceptable at current app size and is already tracked as a potential optimization in `docs/PLAN.md`.
+- `src/views/gameBoard.js`
+  - Uses `ResizeObserver` + RAF layout scheduling.
+  - Applies a concrete initial pixel size before first paint.
+  - Caches the last computed size per board dimensions to prevent visual "relaunch/grow" on move remounts.
+- `src/views/colorKeyboard.js`
+  - Uses `ResizeObserver` + RAF layout scheduling.
+  - Applies a concrete initial layout (gap/maxWidth/key size) before first paint to avoid one-frame disappearing.
+
+Practical outcome:
+- Move clicks still remount the app, but board/keyboard sizing no longer visibly jitters during that remount.
 
 ## Styling Pipeline
 
@@ -119,9 +136,16 @@ Shortcuts are ignored when:
 - Focus is in input/textarea/select/contentEditable.
 - Ctrl/Meta is also pressed.
 
-## Known Maintenance Notes
+## Type Contracts (JS)
 
-- There are no committed automated tests yet; `bun test` currently finds no test files.
+- Shared domain contracts are documented in `src/types/game.js` via JSDoc typedefs.
+- Core logic modules import these typedefs in JSDoc (`import('../types/game.js')`) for editor/type-hint support while staying plain JavaScript.
+
+## Quality Gates
+
+- Lint: `bun run lint`
+- Build: `bun run build`
+- Tests: no committed test suite yet (`bun test` currently finds no test files).
 
 ## Recommended First Files for New Contributors
 

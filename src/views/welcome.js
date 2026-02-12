@@ -157,6 +157,7 @@ export function renderWelcome({ actions }) {
                   window.open(
                     "https://github.com/ekremkaraca/floodit-js",
                     "_blank",
+                    "noopener,noreferrer",
                   ),
               },
               ["View Source Code"],

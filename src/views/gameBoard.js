@@ -4,36 +4,45 @@ import { DEFAULT_COLORS } from '../engine/game.js';
 const COLOR_HEX = Object.fromEntries(
   DEFAULT_COLORS.map((color) => [color.name, color.hex]),
 );
+const BOARD_SIZE_CACHE = new Map();
 
 export function renderGameBoard({ board }) {
   const wrapper = h('div', {
     className: 'board-wrap',
   });
+  const cacheKey = `${board.rows}x${board.columns}`;
 
-  const isDesktop = window.innerWidth >= 1024;
-  const viewportWidth = window.innerWidth * 0.9;
-  const viewportHeight = window.innerHeight * (isDesktop ? 0.65 : 0.9);
-  const maxWidth = Math.min(viewportWidth, 900);
-  const maxHeight = Math.min(viewportHeight, 900);
-  const aspect = board.columns / board.rows;
+  function getGridSize(availableWidth) {
+    const viewportWidth = document.documentElement.clientWidth * 0.9;
+    const isDesktop = document.documentElement.clientWidth >= 1024;
+    const viewportHeight = document.documentElement.clientHeight * (isDesktop ? 0.65 : 0.9);
 
-  let width = maxWidth;
-  let height = width / aspect;
-  if (height > maxHeight) {
-    height = maxHeight;
-    width = height * aspect;
+    const maxWidth = Math.min(availableWidth > 0 ? availableWidth : viewportWidth, viewportWidth, 900);
+    const maxHeight = Math.min(viewportHeight, 900);
+    const aspect = board.columns / board.rows;
+
+    let width = maxWidth;
+    let height = width / aspect;
+    if (height > maxHeight) {
+      height = maxHeight;
+      width = height * aspect;
+    }
+
+    return {
+      width: Math.max(0, Math.floor(width)),
+      height: Math.max(0, Math.floor(height)),
+    };
   }
 
-  const sizeStyle = {
-    width: `${Math.max(0, Math.floor(width))}px`,
-    height: `${Math.max(0, Math.floor(height))}px`,
-    gridTemplateColumns: `repeat(${board.columns}, 1fr)`,
-    gridTemplateRows: `repeat(${board.rows}, 1fr)`,
-  };
-
+  const initialSize = BOARD_SIZE_CACHE.get(cacheKey) || getGridSize(0);
   const grid = h('div', {
     className: 'board-grid',
-    style: sizeStyle,
+    style: {
+      width: `${initialSize.width}px`,
+      height: `${initialSize.height}px`,
+      gridTemplateColumns: `repeat(${board.columns}, 1fr)`,
+      gridTemplateRows: `repeat(${board.rows}, 1fr)`,
+    },
   });
 
   for (let r = 0; r < board.rows; r++) {
@@ -49,6 +58,33 @@ export function renderGameBoard({ board }) {
       );
     }
   }
+
+  let rafId = 0;
+  function updateLayout() {
+    if (!wrapper.isConnected) return;
+
+    const rect = wrapper.getBoundingClientRect();
+    const next = getGridSize(rect.width);
+    BOARD_SIZE_CACHE.set(cacheKey, next);
+    grid.style.width = `${next.width}px`;
+    grid.style.height = `${next.height}px`;
+  }
+
+  function scheduleLayout() {
+    if (rafId) return;
+    rafId = requestAnimationFrame(() => {
+      rafId = 0;
+      updateLayout();
+    });
+  }
+
+  if (typeof ResizeObserver === 'function') {
+    const observer = new ResizeObserver(() => {
+      scheduleLayout();
+    });
+    observer.observe(wrapper);
+  }
+  scheduleLayout();
 
   wrapper.appendChild(grid);
   return wrapper;

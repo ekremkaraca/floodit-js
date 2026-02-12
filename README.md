@@ -73,6 +73,9 @@ bun install
 # Development
 bun run dev
 
+# Lint
+bun run lint
+
 # Production build
 bun run build
 
@@ -93,6 +96,14 @@ bun run preview
 - Migrated view styling to semantic classes and rebuilt `src/styles/app.css`.
 - Added mobile/narrow-screen UI polish for header actions and modal touch ergonomics.
 - Fixed Custom Mode range slider behavior for board sizes above `10`.
+- Added ESLint-based quality gate (`bun run lint`).
+- Added shared JSDoc game type contracts in `src/types/game.js` (JS-only, no TS migration).
+- Standardized seed handling with `AUTO_GENERATE_SEED` and updated reset to generate a fresh board.
+- Refactored custom settings updates to immutable store-driven updates.
+- Added no-op update guards in store/actions to reduce unnecessary remounts.
+- Batched remount scheduling with requestAnimationFrame.
+- Moved board and color keyboard sizing to component-local `ResizeObserver` logic.
+- Fixed board "relaunch/grow" and keyboard one-frame disappear/jitter by applying stable initial layout before first paint.
 - Kept documentation aligned in `docs/PLAN.md`.
 
 ## Roadmap (Short)

@@ -5,8 +5,13 @@
   "scripts": {
     "dev": "bun --hot ./server.ts",
     "build": "bun build ./src/index.html --outdir ./dist --minify",
-    "preview": "NODE_ENV=production bun ./server.ts"
+    "preview": "NODE_ENV=production bun ./server.ts",
+    "lint": "eslint ."
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@eslint/js": "^10",
+    "eslint": "^10",
+    "globals": "^17"
+  },
   "peerDependencies": {}
 }

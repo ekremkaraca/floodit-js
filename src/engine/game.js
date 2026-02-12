@@ -1,3 +1,7 @@
+/** @typedef {import('../types/game.js').Board} Board */
+/** @typedef {import('../types/game.js').Position} Position */
+/** @typedef {import('../types/game.js').CustomGameSettings} CustomGameSettings */
+
 export const DEFAULT_COLORS = [
   { name: 'blue', hex: '#3584e4' },
   { name: 'green', hex: '#33d17a' },
@@ -6,6 +10,8 @@ export const DEFAULT_COLORS = [
   { name: 'red', hex: '#ed333b' },
   { name: 'purple', hex: '#9141ac' },
 ];
+
+export const AUTO_GENERATE_SEED = 0;
 
 /**
  * Preset game modes shown in the UI.
@@ -25,12 +31,13 @@ export const DIFFICULTIES = [
  * @param {number} columns
  * @param {number} [seed=0]
  * @param {number} [maxSteps=0]
+ * @returns {Board}
  */
 export function initializeBoard(
   name,
   rows,
   columns,
-  seed = 0,
+  seed = AUTO_GENERATE_SEED,
   maxSteps = 0,
 ) {
   const matrix = Array(rows)
@@ -39,7 +46,7 @@ export function initializeBoard(
 
   const availableColors = DEFAULT_COLORS.map((c) => c.name);
 
-  if (seed === 0) {
+  if (seed === AUTO_GENERATE_SEED) {
     seed = Date.now();
   }
 
@@ -76,7 +83,8 @@ export function initializeBoard(
 /**
  * Return valid orthogonal neighbors for a given position.
  * @param {{ rows: number, columns: number }} board
- * @param {{ row: number, column: number }} pos
+ * @param {Position} pos
+ * @returns {Position[]}
  */
 function getNeighbors(board, pos) {
   const { row, column } = pos;
@@ -93,8 +101,9 @@ function getNeighbors(board, pos) {
 /**
  * Flood-fill from top-left and return next immutable board snapshot.
  * Returns the original board if selected color is unchanged.
- * @param {{ rows: number, columns: number, matrix: string[][], step: number }} board
+ * @param {Board} board
  * @param {string} newColor
+ * @returns {Board}
  */
 export function flood(board, newColor) {
   const newBoard = { ...board };
@@ -139,10 +148,11 @@ export function flood(board, newColor) {
 
 /**
  * Create a custom-mode board from custom settings.
- * @param {{ boardSize: number, moveLimit: number }} settings
+ * @param {CustomGameSettings} settings
  * @param {number} [seed=0]
+ * @returns {Board}
  */
-export function initializeCustomBoard(settings, seed = 0) {
+export function initializeCustomBoard(settings, seed = AUTO_GENERATE_SEED) {
   return initializeBoard(
     'Custom',
     settings.boardSize,
@@ -154,7 +164,8 @@ export function initializeCustomBoard(settings, seed = 0) {
 
 /**
  * Remaining attempts for the current board.
- * @param {{ maxSteps: number, step: number }} board
+ * @param {Board} board
+ * @returns {number}
  */
 export function getStepsLeft(board) {
   return board.maxSteps - board.step;
@@ -163,6 +174,7 @@ export function getStepsLeft(board) {
 /**
  * Heuristic used by the original implementation to estimate reasonable move limits.
  * @param {{ rows: number }} board
+ * @returns {number}
  */
 export function calculateMaxSteps(board) {
   return Math.floor((30 * (board.rows * DEFAULT_COLORS.length)) / (17 * 6));
@@ -170,7 +182,8 @@ export function calculateMaxSteps(board) {
 
 /**
  * True when every cell matches the top-left color.
- * @param {{ rows: number, columns: number, matrix: string[][] }} board
+ * @param {Board} board
+ * @returns {boolean}
  */
 export function isAllFilled(board) {
   const targetColor = board.matrix[0][0];

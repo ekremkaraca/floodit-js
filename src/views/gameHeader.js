@@ -149,6 +149,7 @@ export function renderGameHeader({
                       window.open(
                         "https://github.com/ekremkaraca/floodit-js",
                         "_blank",
+                        "noopener,noreferrer",
                       ),
                     className: "btn btn--neutral btn--icon",
                     title: "View source code on GitHub",

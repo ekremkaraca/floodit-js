@@ -38,22 +38,20 @@ function mount() {
   appEl.appendChild(renderApp({ state: store.getState(), actions }));
 }
 
-store.subscribe(() => {
-  mount();
-});
-
-mount();
-
-let resizeRaf = 0;
-window.addEventListener('resize', () => {
-  if (resizeRaf) {
-    cancelAnimationFrame(resizeRaf);
-  }
-  resizeRaf = requestAnimationFrame(() => {
-    resizeRaf = 0;
+let mountRaf = 0;
+function scheduleMount() {
+  if (mountRaf) return;
+  mountRaf = requestAnimationFrame(() => {
+    mountRaf = 0;
     mount();
   });
+}
+
+store.subscribe(() => {
+  scheduleMount();
 });
+
+scheduleMount();
 
 // Avoid stealing global shortcuts while user is typing in inputs.
 function isTextInputTarget(target) {

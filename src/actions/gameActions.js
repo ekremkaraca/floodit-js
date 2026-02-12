@@ -1,22 +1,55 @@
 import {
   DEFAULT_COLORS,
+  AUTO_GENERATE_SEED,
   initializeBoard,
   initializeCustomBoard,
   flood,
   getStepsLeft,
   isAllFilled,
 } from '../engine/game.js';
+/** @typedef {import('../types/game.js').Difficulty} Difficulty */
+/** @typedef {import('../types/game.js').CustomGameSettings} CustomGameSettings */
 
 /**
  * Action factory that encapsulates all state transitions.
  * Each method is intentionally small and maps closely to one user intent.
  */
 export function createActions(store) {
-  function setSelectedColor(colorName) {
-    store.update((s) => ({ ...s, selectedColor: colorName }));
+  /**
+   * @param {CustomGameSettings} nextSettings
+   */
+  function setCustomSettings(nextSettings) {
+    store.update((s) => {
+      if (
+        s.customSettings.boardSize === nextSettings.boardSize &&
+        s.customSettings.customMoveLimit === nextSettings.customMoveLimit &&
+        s.customSettings.moveLimit === nextSettings.moveLimit
+      ) {
+        return s;
+      }
+
+      return {
+        ...s,
+        customSettings: {
+          ...nextSettings,
+        },
+      };
+    });
   }
 
-  function startNewGame(difficulty, seed = 0) {
+  function setSelectedColor(colorName) {
+    store.update((s) => (
+      s.selectedColor === colorName
+        ? s
+        : { ...s, selectedColor: colorName }
+    ));
+  }
+
+  /**
+   * @param {Difficulty} difficulty
+   * @param {number} [seed]
+   */
+  function startNewGame(difficulty, seed = AUTO_GENERATE_SEED) {
     const newBoard = initializeBoard(
       difficulty.name,
       difficulty.rows,
@@ -35,7 +68,11 @@ export function createActions(store) {
     }));
   }
 
-  function startCustomGame(settings, seed = 0) {
+  /**
+   * @param {CustomGameSettings} settings
+   * @param {number} [seed]
+   */
+  function startCustomGame(settings, seed = AUTO_GENERATE_SEED) {
     const newBoard = initializeCustomBoard(settings, seed);
 
     store.update((s) => ({
@@ -56,7 +93,7 @@ export function createActions(store) {
       board.name,
       board.rows,
       board.columns,
-      board.seed,
+      AUTO_GENERATE_SEED,
       board.maxSteps,
     );
 
@@ -80,6 +117,10 @@ export function createActions(store) {
     }));
   }
 
+  /**
+   * @param {string} colorName
+   * @returns {{ success: boolean, gameState: 'playing' | 'won' | 'lost' | null }}
+   */
   function makeMove(colorName) {
     const { board } = store.getState();
     if (!board || getStepsLeft(board) < 1) {
@@ -204,6 +245,7 @@ export function createActions(store) {
 
   return {
     DEFAULT_COLORS,
+    setCustomSettings,
     setSelectedColor,
     startNewGame,
     startCustomGame,
