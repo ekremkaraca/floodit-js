@@ -35,7 +35,7 @@
 
 ### Build and styling stability
 - Configured Bun-first scripts for dev/build/preview in `package.json`.
-- Added ESLint quality gate (`bun run lint`) with flat config.
+- Added oxlint quality gate (`bun run lint`).
 - Removed Tailwind build tooling and dependency in favor of static custom CSS.
 - Replaced utility-style class usage with semantic component classes across `src/views/*`.
 - Rebuilt `src/styles/app.css` as project-owned design tokens + component styles.

@@ -96,7 +96,7 @@ bun run preview
 - Migrated view styling to semantic classes and rebuilt `src/styles/app.css`.
 - Added mobile/narrow-screen UI polish for header actions and modal touch ergonomics.
 - Fixed Custom Mode range slider behavior for board sizes above `10`.
-- Added ESLint-based quality gate (`bun run lint`).
+- Added oxlint-based quality gate (`bun run lint`).
 - Added shared JSDoc game type contracts in `src/types/game.js` (JS-only, no TS migration).
 - Standardized seed handling with `AUTO_GENERATE_SEED` and updated reset to generate a fresh board.
 - Refactored custom settings updates to immutable store-driven updates.

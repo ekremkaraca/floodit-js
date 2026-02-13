@@ -6,12 +6,11 @@
     "dev": "bun --hot ./server.ts",
     "build": "bun build ./src/index.html --outdir ./dist --minify",
     "preview": "NODE_ENV=production bun ./server.ts",
-    "lint": "eslint ."
+    "lint": "oxlint . --ignore-pattern dist",
+    "lint:fix": "oxlint . --fix --ignore-pattern dist"
   },
   "devDependencies": {
-    "@eslint/js": "^10",
-    "eslint": "^10",
-    "globals": "^17"
+    "oxlint": "^1.47.0"
   },
   "peerDependencies": {}
 }
