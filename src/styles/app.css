@@ -35,6 +35,8 @@
   --radius-lg: 18px;
 
   --ease-out: cubic-bezier(0.2, 0.72, 0.24, 1);
+  --board-cell-duration: 280ms;
+  --board-cell-ease: cubic-bezier(0.22, 0.7, 0.26, 1);
 }
 
 .dark {
@@ -578,11 +580,32 @@ button {
 
 .board-cell {
   border: 1px solid var(--border-strong);
-  transition: opacity 0.25s var(--ease-out);
+  transform: scale(1);
+  transition:
+    background-color var(--board-cell-duration) var(--board-cell-ease),
+    border-color var(--board-cell-duration) var(--board-cell-ease),
+    transform var(--board-cell-duration) var(--board-cell-ease),
+    opacity 220ms var(--board-cell-ease);
 }
 
 .board-cell:hover {
-  opacity: 0.82;
+  opacity: 0.88;
+  transform: scale(0.985);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-cell {
+    transition:
+      background-color 1ms linear,
+      border-color 1ms linear,
+      transform 1ms linear,
+      opacity 1ms linear;
+  }
+
+  .board-cell:hover {
+    transform: none;
+    opacity: 1;
+  }
 }
 
 .keyboard-wrap {

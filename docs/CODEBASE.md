@@ -9,8 +9,8 @@ The app follows a simple unidirectional flow:
 1. User interacts with UI elements rendered from `src/views/*`.
 2. View callbacks call action functions from `src/actions/gameActions.js`.
 3. Actions compute next state (often using `src/engine/game.js`) and update the store (`src/state/store.js`).
-4. Store subscribers trigger a full remount in `src/main.js`.
-5. `renderApp` in `src/views/appView.js` re-renders from current state.
+4. Store subscribers schedule render and persistence work in `src/main.js`.
+5. Renderer applies targeted slot patches for gameplay updates when possible, with full remount fallback for structural transitions.
 
 There is no framework runtime. Rendering is plain DOM creation using a helper function (`h`) in `src/views/dom.js`.
 
@@ -19,6 +19,7 @@ There is no framework runtime. Rendering is plain DOM creation using a helper fu
 - `server.ts`: Bun HTTP entrypoint, serves `src/index.html` with HMR in development.
 - `src/index.html`: bootstraps theme preference early to avoid dark-mode flash and loads `src/main.js`.
 - `src/main.js`: initializes state, wires actions, subscribes to store updates, mounts app, and registers global keyboard shortcuts.
+- `src/state/persistence.js`: versioned localStorage load/save + sanitization.
 
 ## Core Modules
 
@@ -98,9 +99,10 @@ Reset/new/quit flows use the shared confirm dialog:
 
 Current rendering strategy uses a hybrid approach:
 
-- App tree is still fully remounted from state in `src/main.js`.
-- Remount is requestAnimationFrame-batched (`scheduleMount`) to avoid repeated remounts in the same frame.
-- `mount` clears `#app` and appends a fresh tree from `renderApp`.
+- Render work is requestAnimationFrame-batched (`scheduleRender`) in `src/main.js`.
+- For gameplay-only updates, the renderer patches specific slots (`game-header`, `game-board`, `color-keyboard`) instead of remounting the entire app.
+- Board patching includes an in-place fast path that updates existing `.board-cell` backgrounds only when cell colors change.
+- Full remount is retained as a safe fallback for structural UI transitions (welcome/custom mode/dialog/game-over visibility changes).
 
 Layout-sensitive components self-adjust after mount:
 
@@ -113,7 +115,9 @@ Layout-sensitive components self-adjust after mount:
   - Applies a concrete initial layout (gap/maxWidth/key size) before first paint to avoid one-frame disappearing.
 
 Practical outcome:
-- Move clicks still remount the app, but board/keyboard sizing no longer visibly jitters during that remount.
+- Move interactions avoid full app remounts in the normal gameplay path.
+- Board updates reduce DOM churn by mutating existing cell styles where possible.
+- Layout-sensitive components keep their `ResizeObserver`-based stabilization behavior.
 
 ## Styling Pipeline
 
@@ -145,7 +149,7 @@ Shortcuts are ignored when:
 
 - Lint: `bun run lint`
 - Build: `bun run build`
-- Tests: no committed test suite yet (`bun test` currently finds no test files).
+- Tests: `bun test` (suite lives under `tests/`).
 
 ## Recommended First Files for New Contributors
 

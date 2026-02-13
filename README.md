@@ -48,9 +48,11 @@
 ## Project Structure
 - `src/engine/game.js`: core game logic (board init, flood, win/loss)
 - `src/state/store.js`: pub/sub state store
+- `src/state/persistence.js`: localStorage persistence with schema versioning
 - `src/actions/gameActions.js`: action/state transition layer
 - `src/views/*`: UI rendering modules
 - `src/main.js`: app bootstrap + keyboard shortcuts
+- `tests/*`: engine/action/persistence automated tests
 - `server.ts`: Bun server entry
 - `docs/CODEBASE.md`: architecture, data flow, and maintenance guide
 - `docs/PLAN.md`: roadmap and implementation status
@@ -59,7 +61,8 @@
 The app uses a straightforward loop:
 1. Views trigger action callbacks.
 2. Actions compute next state (using engine helpers) and update the store.
-3. Store subscribers remount the app from current state.
+3. Store subscribers schedule render + persistence updates.
+4. Renderer applies targeted game-slot patches when safe, with full remount fallback for structural UI transitions.
 
 See `docs/CODEBASE.md` for full lifecycle details and module responsibilities.
 
@@ -76,6 +79,9 @@ bun run dev
 # Lint
 bun run lint
 
+# Test
+bun test
+
 # Production build
 bun run build
 
@@ -87,7 +93,8 @@ bun run preview
 ## Current Status
 - Core gameplay and major UX flows are implemented.
 - Build is passing via `bun run build`.
-- No automated tests are committed yet.
+- Lint is passing via `bun run lint` (oxlint).
+- Automated tests are passing via `bun test`.
 
 ### Latest Updates
 - Improved Custom difficulty labeling (removed misleading `0×0` UI text).
@@ -101,16 +108,22 @@ bun run preview
 - Standardized seed handling with `AUTO_GENERATE_SEED` and updated reset to generate a fresh board.
 - Refactored custom settings updates to immutable store-driven updates.
 - Added no-op update guards in store/actions to reduce unnecessary remounts.
-- Batched remount scheduling with requestAnimationFrame.
+- Added RAF-batched render/persist scheduling.
 - Moved board and color keyboard sizing to component-local `ResizeObserver` logic.
 - Fixed board "relaunch/grow" and keyboard one-frame disappear/jitter by applying stable initial layout before first paint.
+- Added automated tests for engine/actions/persistence in `tests/`.
+- Added dialog accessibility improvements (roles, aria labels, Escape close, focus trap/restore).
+- Added versioned localStorage state persistence (`src/state/persistence.js`).
+- Migrated linting from ESLint to oxlint.
+- Added targeted rendering updates for gameplay slots and in-place board cell patching to reduce DOM churn.
+- Added board color transitions and reduced-motion overrides for accessibility.
 - Kept documentation aligned in `docs/PLAN.md`.
 
 ## Roadmap (Short)
-1. Add automated tests for engine/actions.
-2. Improve accessibility for dialogs and menus.
-3. Add localStorage game-state persistence.
-4. Reduce full-app remounting with targeted updates.
+1. Extend keyboard accessibility for header/menu controls.
+2. Reduce keyboard subtree rebuilds with key-level patching.
+3. Add player stats/progression and seeded challenge sharing.
+4. Add optional keyboard shortcuts for color selection (`1-6`).
 
 For the full plan and progress log, see `docs/PLAN.md`.
 
