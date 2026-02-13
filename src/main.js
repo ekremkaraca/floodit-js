@@ -2,6 +2,7 @@ import './styles/app.css';
 
 import { createStore } from './state/store.js';
 import { createActions } from './actions/gameActions.js';
+import { loadPersistedState, savePersistedState } from './state/persistence.js';
 import { clear } from './views/dom.js';
 import { renderApp } from './views/appView.js';
 
@@ -11,18 +12,19 @@ if (!appEl) throw new Error('Missing #app element');
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 const saved = localStorage.getItem('darkMode');
 const initialDarkMode = saved !== null ? saved === 'true' : prefersDark;
+const persisted = loadPersistedState();
 
 const store = createStore({
-  board: null,
-  selectedColor: '',
-  showCustomMode: false,
+  board: persisted?.board ?? null,
+  selectedColor: persisted?.selectedColor ?? '',
+  showCustomMode: persisted?.showCustomMode ?? false,
   showGameOverModal: false,
   showConfirmDialog: false,
   pendingAction: null,
   confirmDialogContent: { title: 'Confirm Action', message: 'Are you sure you want to proceed?' },
-  lastGameConfig: null,
+  lastGameConfig: persisted?.lastGameConfig ?? null,
   isDarkMode: initialDarkMode,
-  customSettings: {
+  customSettings: persisted?.customSettings ?? {
     boardSize: 10,
     customMoveLimit: false,
     moveLimit: 20,
@@ -39,6 +41,7 @@ function mount() {
 }
 
 let mountRaf = 0;
+let persistRaf = 0;
 function scheduleMount() {
   if (mountRaf) return;
   mountRaf = requestAnimationFrame(() => {
@@ -47,8 +50,17 @@ function scheduleMount() {
   });
 }
 
+function schedulePersist() {
+  if (persistRaf) return;
+  persistRaf = requestAnimationFrame(() => {
+    persistRaf = 0;
+    savePersistedState(store.getState());
+  });
+}
+
 store.subscribe(() => {
   scheduleMount();
+  schedulePersist();
 });
 
 scheduleMount();

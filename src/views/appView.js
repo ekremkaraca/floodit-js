@@ -21,8 +21,9 @@ export function renderApp({ state, actions }) {
 
   const board = state.board;
   const stepsLeft = getStepsLeft(board);
-  const isGameOver = isAllFilled(board) || stepsLeft < 1;
-  const hasWon = isAllFilled(board);
+  const isFilled = isAllFilled(board);
+  const isGameOver = isFilled || stepsLeft < 1;
+  const hasWon = isFilled;
 
   const newGameMenuItems = DIFFICULTIES.map((difficulty) =>
     h('button', {

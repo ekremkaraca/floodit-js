@@ -119,11 +119,12 @@ export function flood(board, newColor) {
   );
 
   const queue = [{ row: 0, column: 0 }];
+  let queueIndex = 0;
   visited[0][0] = true;
   newMatrix[0][0] = newColor;
 
-  while (queue.length > 0) {
-    const current = queue.shift();
+  while (queueIndex < queue.length) {
+    const current = queue[queueIndex++];
     const neighbors = getNeighbors(board, current);
 
     for (const pos of neighbors) {
