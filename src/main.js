@@ -1,10 +1,20 @@
 import './styles/app.css';
 
+import { DEFAULT_COLORS } from './engine/game.js';
 import { createStore } from './state/store.js';
 import { createActions } from './actions/gameActions.js';
 import { loadPersistedState, savePersistedState } from './state/persistence.js';
 import { clear } from './views/dom.js';
-import { renderApp } from './views/appView.js';
+import {
+  renderApp,
+  renderColorKeyboardContent,
+  renderGameBoardContent,
+  renderGameHeaderContent,
+} from './views/appView.js';
+
+const COLOR_HEX = Object.fromEntries(
+  DEFAULT_COLORS.map((color) => [color.name, color.hex]),
+);
 
 const appEl = document.getElementById('app');
 if (!appEl) throw new Error('Missing #app element');
@@ -34,19 +44,154 @@ const store = createStore({
 const baseActions = createActions(store);
 const actions = { ...baseActions, store };
 
-// Full remount strategy: simple and predictable for current app size.
-function mount() {
-  clear(appEl);
-  appEl.appendChild(renderApp({ state: store.getState(), actions }));
+function replaceSlotContent(root, slotName, nextNode) {
+  const slot = root.querySelector(`[data-slot="${slotName}"]`);
+  if (!(slot instanceof HTMLElement)) return false;
+  clear(slot);
+  slot.appendChild(nextNode);
+  return true;
 }
 
-let mountRaf = 0;
+function patchBoardCells(root, board) {
+  const slot = root.querySelector('[data-slot="game-board"]');
+  if (!(slot instanceof HTMLElement)) return false;
+
+  const grid = slot.querySelector('.board-grid');
+  if (!(grid instanceof HTMLElement)) return false;
+  if (grid.dataset.rows !== String(board.rows)) return false;
+  if (grid.dataset.columns !== String(board.columns)) return false;
+
+  const expectedCellCount = board.rows * board.columns;
+  if (grid.children.length !== expectedCellCount) return false;
+
+  let index = 0;
+  for (let r = 0; r < board.rows; r++) {
+    for (let c = 0; c < board.columns; c++) {
+      const cell = grid.children[index];
+      if (!(cell instanceof HTMLElement)) return false;
+
+      const color = board.matrix[r][c];
+      if (cell.dataset.color !== color) {
+        const nextBackground = COLOR_HEX[color] || '#9ca3af';
+        cell.style.backgroundColor = nextBackground;
+        cell.dataset.color = color;
+      }
+
+      index += 1;
+    }
+  }
+
+  return true;
+}
+
+function patchGameView(state, plan) {
+  const screen = appEl.firstElementChild;
+  if (!(screen instanceof HTMLElement)) return false;
+  if (!screen.classList.contains('app-screen--game')) return false;
+
+  if (plan.header) {
+    const headerUpdated = replaceSlotContent(
+      screen,
+      'game-header',
+      renderGameHeaderContent({ state, actions }),
+    );
+    if (!headerUpdated) return false;
+  }
+
+  if (plan.board) {
+    const boardUpdated =
+      patchBoardCells(screen, state.board) ||
+      replaceSlotContent(
+        screen,
+        'game-board',
+        renderGameBoardContent({ state }),
+      );
+    if (!boardUpdated) return false;
+  }
+
+  if (plan.keyboard) {
+    const keyboardUpdated = replaceSlotContent(
+      screen,
+      'color-keyboard',
+      renderColorKeyboardContent({ state, actions }),
+    );
+    if (!keyboardUpdated) return false;
+  }
+
+  return true;
+}
+
+function canPatchGameView(prev, next) {
+  if (!prev || !next) return false;
+  if (!prev.board || !next.board) return false;
+  if (prev.showCustomMode || next.showCustomMode) return false;
+  if (prev.showConfirmDialog || next.showConfirmDialog) return false;
+  if (prev.showGameOverModal || next.showGameOverModal) return false;
+  return true;
+}
+
+function buildPatchPlan(prev, next) {
+  const boardChanged = prev.board !== next.board;
+
+  const plan = {
+    header: false,
+    board: false,
+    keyboard: false,
+  };
+
+  if (boardChanged) {
+    // Board changes affect progress/header metrics and keyboard disabled state.
+    plan.header = true;
+    plan.board = true;
+    plan.keyboard = true;
+    return plan;
+  }
+
+  if (prev.selectedColor !== next.selectedColor) {
+    plan.keyboard = true;
+  }
+
+  if (prev.isDarkMode !== next.isDarkMode) {
+    plan.header = true;
+  }
+
+  return plan;
+}
+
+function mount(state) {
+  clear(appEl);
+  appEl.appendChild(renderApp({ state, actions }));
+}
+
+let lastRenderedState = null;
+let renderRaf = 0;
 let persistRaf = 0;
-function scheduleMount() {
-  if (mountRaf) return;
-  mountRaf = requestAnimationFrame(() => {
-    mountRaf = 0;
-    mount();
+
+function render() {
+  const state = store.getState();
+
+  if (canPatchGameView(lastRenderedState, state)) {
+    const plan = buildPatchPlan(lastRenderedState, state);
+    if (!plan.header && !plan.board && !plan.keyboard) {
+      lastRenderedState = state;
+      return;
+    }
+
+    if (patchGameView(state, plan)) {
+      lastRenderedState = state;
+      return;
+    }
+  }
+
+  mount(state);
+  lastRenderedState = state;
+}
+
+function scheduleRender() {
+  if (renderRaf) return;
+  renderRaf = requestAnimationFrame(() => {
+    renderRaf = 0;
+    render();
   });
 }
 
@@ -59,11 +204,11 @@ function schedulePersist() {
 }
 
 store.subscribe(() => {
-  scheduleMount();
+  scheduleRender();
   schedulePersist();
 });
 
-scheduleMount();
+scheduleRender();
 
 // Avoid stealing global shortcuts while user is typing in inputs.
 function isTextInputTarget(target) {

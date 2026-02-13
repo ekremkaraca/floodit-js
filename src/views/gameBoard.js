@@ -37,6 +37,8 @@ export function renderGameBoard({ board }) {
   const initialSize = BOARD_SIZE_CACHE.get(cacheKey) || getGridSize(0);
   const grid = h('div', {
     className: 'board-grid',
+    'data-rows': String(board.rows),
+    'data-columns': String(board.columns),
     style: {
       width: `${initialSize.width}px`,
       height: `${initialSize.height}px`,
@@ -51,6 +53,7 @@ export function renderGameBoard({ board }) {
       grid.appendChild(
         h('div', {
           className: 'board-cell',
+          'data-color': color,
           style: {
             backgroundColor: COLOR_HEX[color] || '#9ca3af',
           },
