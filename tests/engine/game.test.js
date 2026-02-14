@@ -2,14 +2,30 @@ import { describe, expect, test } from 'bun:test';
 import {
   AUTO_GENERATE_SEED,
   calculateMaxSteps,
+  DIFFICULTIES,
   flood,
   getStepsLeft,
   initializeBoard,
   initializeCustomBoard,
+  initializeMazeBoard,
   isAllFilled,
+  isBoardWon,
+  isGoalReached,
 } from '../../src/engine/game.js';
 
 describe('engine/game', () => {
+  test('DIFFICULTIES includes classic and maze presets', () => {
+    const mazeLevels = DIFFICULTIES.filter((d) => d.mode === 'maze');
+    const classicLevels = DIFFICULTIES.filter((d) => d.mode === 'classic');
+
+    expect(classicLevels.length).toBeGreaterThanOrEqual(3);
+    expect(mazeLevels.map((d) => d.name)).toEqual([
+      'Maze Easy',
+      'Maze Normal',
+      'Maze Hard',
+    ]);
+  });
+
   test('initializeBoard is deterministic with explicit seed', () => {
     const boardA = initializeBoard('Easy', 6, 6, 1234, 15);
     const boardB = initializeBoard('Easy', 6, 6, 1234, 15);
@@ -114,5 +130,90 @@ describe('engine/game', () => {
     expect(isAllFilled(complete)).toBe(true);
     expect(isAllFilled(incomplete)).toBe(false);
     expect(getStepsLeft(complete)).toBe(6);
+  });
+
+  test('initializeMazeBoard creates deterministic walls and goal', () => {
+    const boardA = initializeMazeBoard('Maze', 8, 8, 2222, 18);
+    const boardB = initializeMazeBoard('Maze', 8, 8, 2222, 18);
+
+    expect(boardA.mode).toBe('maze');
+    expect(boardA.goal).toEqual({ row: 7, column: 7 });
+    expect(boardA.walls).toEqual(boardB.walls);
+    expect(boardA.walls?.[0][0]).toBe(false);
+    expect(boardA.walls?.[7][7]).toBe(false);
+  });
+
+  test('initializeMazeBoard guarantees structural path from start to goal', () => {
+    const board = initializeMazeBoard('Maze', 12, 12, 2026, 24);
+    const unifiedColor = board.matrix[0][0];
+    const normalized = {
+      ...board,
+      matrix: Array.from({ length: board.rows }, () =>
+        Array(board.columns).fill(unifiedColor),
+      ),
+    };
+
+    expect(isGoalReached(normalized)).toBe(true);
+  });
+
+  test('flood does not pass through wall cells', () => {
+    const board = {
+      name: 'Maze',
+      mode: 'maze',
+      seed: 1,
+      rows: 2,
+      columns: 2,
+      step: 0,
+      maxSteps: 10,
+      matrix: [
+        ['blue', 'blue'],
+        ['blue', 'blue'],
+      ],
+      walls: [
+        [false, true],
+        [false, false],
+      ],
+      goal: { row: 1, column: 1 },
+    };
+
+    const next = flood(board, 'red');
+    expect(next.matrix).toEqual([
+      ['red', 'blue'],
+      ['red', 'red'],
+    ]);
+  });
+
+  test('isGoalReached and isBoardWon support maze objective', () => {
+    const wonBoard = {
+      name: 'Maze',
+      mode: 'maze',
+      seed: 1,
+      rows: 2,
+      columns: 2,
+      step: 0,
+      maxSteps: 10,
+      matrix: [
+        ['red', 'red'],
+        ['blue', 'red'],
+      ],
+      walls: [
+        [false, false],
+        [true, false],
+      ],
+      goal: { row: 1, column: 1 },
+    };
+
+    const notWonBoard = {
+      ...wonBoard,
+      matrix: [
+        ['red', 'blue'],
+        ['blue', 'red'],
+      ],
+    };
+
+    expect(isGoalReached(wonBoard)).toBe(true);
+    expect(isGoalReached(notWonBoard)).toBe(false);
+    expect(isBoardWon(wonBoard)).toBe(true);
+    expect(isBoardWon(notWonBoard)).toBe(false);
   });
 });

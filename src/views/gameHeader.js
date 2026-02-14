@@ -1,4 +1,6 @@
 import { h } from "./dom.js";
+import { ChevronDown, SquareCode, Moon, Sun, RotateCcw } from "lucide";
+import { renderIcon } from "./icons.js";
 
 export function renderGameHeader({
   boardName,
@@ -34,67 +36,53 @@ export function renderGameHeader({
             className: "game-header__row",
           },
           [
-            h(
-              "div",
-              { className: "game-header__main" },
-              [
-                h("div", {}, [
-                  h(
-                    "h1",
-                    {
-                      className: "game-header__title",
-                    },
-                    [boardName],
-                  ),
-                ]),
-
-                h("div", { className: "game-header__steps-mobile" }, [
-                  h(
-                    "div",
-                    { className: `steps-count ${stepsColorClass}` },
-                    [String(stepsLeft)],
-                  ),
-                  h(
-                    "div",
-                    { className: "steps-label" },
-                    ["left"],
-                  ),
-                ]),
-
+            h("div", { className: "game-header__main" }, [
+              h("div", {}, [
                 h(
-                  "div",
-                  { className: "game-header__progress-wrap" },
-                  [
-                    h("div", { className: "progress" }, [
-                      h(
-                        "div",
-                        {
-                          className: "progress__meta",
-                        },
-                        [
-                          h("span", { className: stepsColorClass }, [
-                            `${currentStep} / ${maxSteps} (${stepsLeft} steps left)`,
-                          ]),
-                          h("span", {}, [`${Math.round(progressPercentage)}%`]),
-                        ],
-                      ),
-                      h(
-                        "div",
-                        {
-                          className: "progress__track",
-                        },
-                        [
-                          h("div", {
-                            className: "progress__fill",
-                            style: { width: `${progressPercentage}%` },
-                          }),
-                        ],
-                      ),
-                    ]),
-                  ],
+                  "h1",
+                  {
+                    className: "game-header__title",
+                  },
+                  [boardName],
                 ),
-              ],
-            ),
+              ]),
+
+              h("div", { className: "game-header__steps-mobile" }, [
+                h("div", { className: `steps-count ${stepsColorClass}` }, [
+                  String(stepsLeft),
+                ]),
+                h("div", { className: "steps-label" }, ["left"]),
+              ]),
+
+              h("div", { className: "game-header__progress-wrap" }, [
+                h("div", { className: "progress" }, [
+                  h(
+                    "div",
+                    {
+                      className: "progress__meta",
+                    },
+                    [
+                      h("span", { className: stepsColorClass }, [
+                        `${currentStep} / ${maxSteps} (${stepsLeft} steps left)`,
+                      ]),
+                      h("span", {}, [`${Math.round(progressPercentage)}%`]),
+                    ],
+                  ),
+                  h(
+                    "div",
+                    {
+                      className: "progress__track",
+                    },
+                    [
+                      h("div", {
+                        className: "progress__fill",
+                        style: { width: `${progressPercentage}%` },
+                      }),
+                    ],
+                  ),
+                ]),
+              ]),
+            ]),
 
             h(
               "div",
@@ -108,7 +96,12 @@ export function renderGameHeader({
                     {
                       className: "btn btn--new menu__trigger",
                     },
-                    ["New ▼"],
+                    [
+                      h("span", {}, ["New"]),
+                      renderIcon(ChevronDown, {
+                        className: "ui-icon menu__trigger-icon",
+                      }),
+                    ],
                   ),
                   h(
                     "div",
@@ -125,8 +118,10 @@ export function renderGameHeader({
                     type: "button",
                     onClick: onReset,
                     className: "btn btn--neutral",
+                    title: "Reset game",
+                    "aria-label": "Reset game",
                   },
-                  ["Reset"],
+                  [renderIcon(RotateCcw)],
                 ),
 
                 h(
@@ -138,7 +133,7 @@ export function renderGameHeader({
                     title: "Toggle dark mode",
                     "aria-label": "Toggle dark mode",
                   },
-                  [isDarkMode ? "☀" : "☾"],
+                  [isDarkMode ? renderIcon(Sun) : renderIcon(Moon)],
                 ),
 
                 h(
@@ -155,7 +150,7 @@ export function renderGameHeader({
                     title: "View source code on GitHub",
                     "aria-label": "View source code on GitHub",
                   },
-                  ["</>"],
+                  [renderIcon(SquareCode)],
                 ),
               ],
             ),

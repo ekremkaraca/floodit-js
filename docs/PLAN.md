@@ -1,73 +1,59 @@
-# FloodIt JS — Project Plan & Status
+# FloodIt Maze JS Plan
 
-## Overview
-- **Project**: `floodit-js`
-- **Goal**: Maintain a lightweight Bun + vanilla JS version of FloodIt with strong parity to the React reference app.
-- **Current state**: Core gameplay is stable, tested, and optimized with targeted rendering updates.
-- **Documentation**: Architecture/data-flow details are maintained in `docs/CODEBASE.md`.
+## Goal
+Build a maze-oriented FloodIt variant while keeping the existing engine/actions/state/views architecture stable and well-documented.
 
-## Tech Stack
-- **Runtime/Server**: Bun (`Bun.serve`)
-- **Frontend**: Vanilla JavaScript (ES modules) + DOM helper rendering
-- **Styling**: Custom CSS (`src/styles/app.css`)
-- **Quality tooling**:
-  - Lint: `bun run lint` (oxlint)
-  - Test: `bun test`
-  - Build: `bun run build`
+## Current Status (2026-02-14)
 
-## Completed
+### Completed
+- Baseline architecture ported from `floodit-js`:
+  - `src/engine/game.js`, `src/actions/gameActions.js`, `src/state/*`, `src/views/*`, `src/main.js`, `src/index.html`, `server.ts`
+- Core maze gameplay implemented:
+  - board mode support (`classic` / `maze`)
+  - maze board data (`walls`, `goal`)
+  - flood behavior respects walls
+  - unified win logic (`isBoardWon`) with maze goal detection
+  - carved maze generation with guaranteed path to goal
+- Mode presets updated:
+  - Classic: `Easy`, `Normal`, `Hard`
+  - Maze: `Maze Easy`, `Maze Normal`, `Maze Hard`
+  - Custom flow supports both classic and maze (`customSettings.gameMode`)
+- Welcome screen improvements:
+  - tabbed view (`Classic` / `Maze`)
+  - mode-specific “How to Play” text
+  - compact layout and stable sizing between tabs
+  - custom button available in both tabs (`Custom`, `Custom Maze`)
+- Game header "New" dropdown improvements:
+  - `Recent Maze Modes` section
+  - full `All Modes` list always shown
+  - compact visual style for long lists
+- Persistence updates:
+  - sanitize/persist maze fields (`mode`, `walls`, `goal`)
+  - sanitize/persist custom mode selection (`customSettings.gameMode`)
+  - sanitize/persist `recentMazeModes`
+- UX/runtime updates:
+  - refresh now always opens welcome screen (no auto-resume board)
+  - HMR accept hook added in `src/main.js`
+- Icon system updates:
+  - Lucide integrated with reusable renderer (`src/views/icons.js`)
+  - header, modal, and welcome icons migrated to Lucide SVGs
+- Documentation/test coverage extended across engine/actions/state.
 
-### Core gameplay and UX
-- Ported core gameplay logic (seeded board init, flood fill, move tracking, win/loss).
-- Implemented state/store/action architecture for game lifecycle flows.
-- Implemented full view layer (welcome, board, keyboard, header, custom mode, dialogs).
-- Added keyboard shortcuts: `Alt+Shift+R`, `Alt+Shift+N`, `Alt+Shift+Q`.
-- Added dark mode initialization, toggle, and persisted preference handling.
+### Verification Snapshot
+- `bun run test`: passing (`27/27`)
+- `bun run build`: passing
+- `bun run lint`: passing
 
-### Tooling and quality gates
-- Standardized Bun-first scripts for dev/build/preview.
-- Migrated linting from ESLint to oxlint (`bun run lint`).
-- Added automated tests under `tests/`:
-  - `tests/engine/game.test.js`
-  - `tests/actions/gameActions.test.js`
-  - `tests/state/persistence.test.js`
+## Next Work
+1. Maze balancing pass (move limits vs generated complexity).
+2. Add maze progress telemetry (for example goal-distance estimate).
+3. Seed-based challenge sharing via URL params.
+4. Add numeric color shortcuts (`1-6`) and optional maze overlay toggle.
+5. Expand docs with a short “How maze generation works” developer section.
 
-### Architecture and performance
-- Added shared JSDoc type contracts in `src/types/game.js`.
-- Standardized seed handling with `AUTO_GENERATE_SEED`.
-- Added immutable custom settings updates and no-op state update guards.
-- Added RAF-batched render + persistence scheduling in `src/main.js`.
-- Replaced full-remount-only rendering with hybrid targeted patching for gameplay slots.
-- Added in-place board-cell patch path to reduce board subtree rebuild cost.
-
-### Accessibility and persistence
-- Added confirm/game-over dialog accessibility improvements:
-  - dialog semantics (`role="dialog"`, `aria-modal`)
-  - Escape-close behavior
-  - focus trap and focus restore
-- Added versioned localStorage persistence in `src/state/persistence.js` with sanitization.
-
-### Styling and motion
-- Rebuilt styling with project-owned semantic CSS.
-- Added board color-change transitions aligned with React behavior.
-- Added board-cell motion tokens for centralized transition tuning.
-- Added `prefers-reduced-motion` override for board-cell animations.
-
-## Verification Snapshot
-- **Lint**: `bun run lint` ✅
-- **Test**: `bun test` ✅
-- **Build**: `bun run build` ✅
-
-## Open Work
-- Complete keyboard/menu accessibility pass for header controls.
-- Reduce color-keyboard subtree churn with key-level in-place patching.
-- Add player stats/progression (local best, win/loss, streak).
-- Add seeded challenge sharing via URL params.
-- Add optional numeric color hotkeys (`1-6`).
-
-## Prioritized Next Steps
-1. Header/menu accessibility hardening (ARIA + keyboard navigation)
-2. Keyboard rendering micro-optimization (in-place key patching)
-3. Stats/progression persistence and UI
-4. Seeded challenge/share links
-5. Numeric color shortcuts
+## Notes
+- Keep architecture boundaries unchanged: engine purity + action orchestration + stateless views.
+- Maintain quality gates before every merge:
+  - `bun run test`
+  - `bun run build`
+  - `bun run lint`

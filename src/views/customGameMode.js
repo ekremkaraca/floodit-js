@@ -4,6 +4,7 @@ import { calculateMaxSteps } from '../engine/game.js';
 export function renderCustomGameMode({ actions }) {
   const state = actions.store.getState();
   const settings = state.customSettings;
+  const gameMode = settings.gameMode === "maze" ? "maze" : "classic";
   const boardSize = settings.boardSize;
   const customMoveLimit = settings.customMoveLimit;
   const moveLimit = settings.moveLimit;
@@ -20,6 +21,29 @@ export function renderCustomGameMode({ actions }) {
     h('h2', {
       className: 'panel__title panel__title--md',
     }, ['Custom Game Mode']),
+  );
+
+  panel.appendChild(
+    h("div", { className: "mode-toggle" }, [
+      h("button", {
+        type: "button",
+        className: `mode-toggle__button ${gameMode === "classic" ? "is-active" : ""}`,
+        onClick: () =>
+          actions.setCustomSettings({
+            ...settings,
+            gameMode: "classic",
+          }),
+      }, ["Classic"]),
+      h("button", {
+        type: "button",
+        className: `mode-toggle__button ${gameMode === "maze" ? "is-active" : ""}`,
+        onClick: () =>
+          actions.setCustomSettings({
+            ...settings,
+            gameMode: "maze",
+          }),
+      }, ["Maze"]),
+    ]),
   );
 
   panel.appendChild(
@@ -106,7 +130,8 @@ export function renderCustomGameMode({ actions }) {
         h('h3', { className: 'settings-card__title' }, [
           'Game Settings',
         ]),
-        h('div', { className: 'settings-card__body' }, [
+          h('div', { className: 'settings-card__body' }, [
+          h('div', {}, [`Mode: ${gameMode === "maze" ? "Maze" : "Classic"}`]),
           h('div', {}, [`Board: ${boardSize}×${boardSize} (${boardSize * boardSize} cells)`]),
           h('div', {}, [
             `Move Limit: ${customMoveLimit ? moveLimit : 'Auto-calculated'}`,
@@ -133,6 +158,7 @@ export function renderCustomGameMode({ actions }) {
         className: 'btn btn--primary btn--block',
         onClick: () => {
           actions.startCustomGame({
+            gameMode,
             boardSize: settings.boardSize,
             customMoveLimit: settings.customMoveLimit,
             moveLimit: settings.customMoveLimit ? settings.moveLimit : 0,

@@ -25,9 +25,10 @@ const initialDarkMode = saved !== null ? saved === 'true' : prefersDark;
 const persisted = loadPersistedState();
 
 const store = createStore({
-  board: persisted?.board ?? null,
+  // Always land on welcome after refresh; do not auto-resume an active board.
+  board: null,
   selectedColor: persisted?.selectedColor ?? '',
-  showCustomMode: persisted?.showCustomMode ?? false,
+  showCustomMode: false,
   showGameOverModal: false,
   showConfirmDialog: false,
   pendingAction: null,
@@ -35,10 +36,12 @@ const store = createStore({
   lastGameConfig: persisted?.lastGameConfig ?? null,
   isDarkMode: initialDarkMode,
   customSettings: persisted?.customSettings ?? {
+    gameMode: 'classic',
     boardSize: 10,
     customMoveLimit: false,
     moveLimit: 20,
   },
+  recentMazeModes: persisted?.recentMazeModes ?? [],
 });
 
 const baseActions = createActions(store);
@@ -69,6 +72,12 @@ function patchBoardCells(root, board) {
     for (let c = 0; c < board.columns; c++) {
       const cell = grid.children[index];
       if (!(cell instanceof HTMLElement)) return false;
+
+      const isWall = board.walls?.[r]?.[c] === true;
+      if (isWall) {
+        index += 1;
+        continue;
+      }
 
       const color = board.matrix[r][c];
       if (cell.dataset.color !== color) {
@@ -267,3 +276,10 @@ window.addEventListener('keydown', (event) => {
     });
   }
 });
+
+// Opt in to Bun HMR updates from imported view modules (e.g. welcome.js).
+if (import.meta.hot) {
+  import.meta.hot.accept(() => {
+    scheduleRender();
+  });
+}

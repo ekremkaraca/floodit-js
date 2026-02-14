@@ -17,10 +17,12 @@ function createInitialState() {
     lastGameConfig: null,
     isDarkMode: false,
     customSettings: {
+      gameMode: 'classic',
       boardSize: 10,
       customMoveLimit: false,
       moveLimit: 20,
     },
+    recentMazeModes: [],
   };
 }
 
@@ -48,7 +50,12 @@ describe('actions/gameActions', () => {
   test('startCustomGame initializes custom board and stores settings config', () => {
     const { store, actions } = createStoreAndActions();
 
-    actions.startCustomGame({ boardSize: 7, customMoveLimit: true, moveLimit: 31 }, 99);
+    actions.startCustomGame({
+      gameMode: 'classic',
+      boardSize: 7,
+      customMoveLimit: true,
+      moveLimit: 31,
+    }, 99);
 
     const state = store.getState();
     expect(state.board?.name).toBe('Custom');
@@ -57,7 +64,12 @@ describe('actions/gameActions', () => {
     expect(state.board?.maxSteps).toBe(31);
     expect(state.lastGameConfig).toEqual({
       type: 'custom',
-      settings: { boardSize: 7, customMoveLimit: true, moveLimit: 31 },
+      settings: {
+        gameMode: 'classic',
+        boardSize: 7,
+        customMoveLimit: true,
+        moveLimit: 31,
+      },
     });
   });
 
@@ -109,6 +121,36 @@ describe('actions/gameActions', () => {
     const result = actions.makeMove('red');
 
     expect(result).toEqual({ success: true, gameState: 'lost' });
+  });
+
+  test('makeMove reports won for maze board when goal is reached', () => {
+    const { store, actions } = createStoreAndActions();
+
+    store.update((s) => ({
+      ...s,
+      board: {
+        name: 'Maze',
+        mode: 'maze',
+        seed: 1,
+        rows: 2,
+        columns: 2,
+        step: 0,
+        maxSteps: 5,
+        matrix: [
+          ['blue', 'red'],
+          ['green', 'red'],
+        ],
+        walls: [
+          [false, false],
+          [true, false],
+        ],
+        goal: { row: 1, column: 1 },
+      },
+    }));
+
+    const result = actions.makeMove('red');
+    expect(result).toEqual({ success: true, gameState: 'won' });
+    expect(store.getState().board?.step).toBe(1);
   });
 
   test('makeMove rejects same-color selection', () => {
@@ -179,11 +221,17 @@ describe('actions/gameActions', () => {
   test('startNewRoundWithCurrentSettings uses stored custom config', () => {
     const { store, actions } = createStoreAndActions();
 
-    actions.startCustomGame({ boardSize: 9, customMoveLimit: true, moveLimit: 40 }, 321);
+    actions.startCustomGame({
+      gameMode: 'maze',
+      boardSize: 9,
+      customMoveLimit: true,
+      moveLimit: 40,
+    }, 321);
     actions.startNewRoundWithCurrentSettings();
 
     const board = store.getState().board;
-    expect(board?.name).toBe('Custom');
+    expect(board?.name).toBe('Custom Maze');
+    expect(board?.mode).toBe('maze');
     expect(board?.rows).toBe(9);
     expect(board?.maxSteps).toBe(40);
   });
@@ -204,5 +252,18 @@ describe('actions/gameActions', () => {
     expect(state.board).toBeNull();
     expect(state.showConfirmDialog).toBe(false);
     expect(state.pendingAction).toBeNull();
+  });
+
+  test('startNewGame tracks recent maze modes for new-game menu', () => {
+    const { store, actions } = createStoreAndActions();
+
+    actions.startNewGame({ name: 'Maze Easy', mode: 'maze', rows: 10, columns: 10, maxSteps: 22 }, 1);
+    actions.startNewGame({ name: 'Maze Normal', mode: 'maze', rows: 12, columns: 12, maxSteps: 24 }, 2);
+    actions.startNewGame({ name: 'Maze Easy', mode: 'maze', rows: 10, columns: 10, maxSteps: 22 }, 3);
+
+    const recent = store.getState().recentMazeModes;
+    expect(recent).toHaveLength(2);
+    expect(recent[0]?.name).toBe('Maze Easy');
+    expect(recent[1]?.name).toBe('Maze Normal');
   });
 });

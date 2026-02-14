@@ -45,32 +45,64 @@ function sanitizeBoard(board) {
   const maxSteps = toSafeInteger(board.maxSteps, 20, 1, 500);
   const step = toSafeInteger(board.step, 0, 0, maxSteps);
   const seed = Number.isFinite(Number(board.seed)) ? Number(board.seed) : Date.now();
+  const mode = board.mode === 'maze' ? 'maze' : 'classic';
+
+  // Maze state is optional; sanitize only when shape matches current board size.
+  let walls;
+  if (Array.isArray(board.walls) && board.walls.length === rows) {
+    let valid = true;
+    const nextWalls = [];
+    for (let r = 0; r < rows; r++) {
+      const wallRow = board.walls[r];
+      if (!Array.isArray(wallRow) || wallRow.length !== columns) {
+        valid = false;
+        break;
+      }
+      nextWalls.push(wallRow.map((value) => Boolean(value)));
+    }
+    if (valid) {
+      walls = nextWalls;
+    }
+  }
+
+  let goal;
+  if (isPlainObject(board.goal)) {
+    const goalRow = toSafeInteger(board.goal.row, rows - 1, 0, rows - 1);
+    const goalColumn = toSafeInteger(board.goal.column, columns - 1, 0, columns - 1);
+    goal = { row: goalRow, column: goalColumn };
+  }
 
   return {
     name: typeof board.name === 'string' && board.name.length > 0 ? board.name : 'Custom',
+    mode,
     seed,
     rows,
     columns,
     step,
     maxSteps,
     matrix,
+    walls,
+    goal,
   };
 }
 
 function sanitizeCustomSettings(value) {
   if (!isPlainObject(value)) {
     return {
+      gameMode: 'classic',
       boardSize: 10,
       customMoveLimit: false,
       moveLimit: 20,
     };
   }
 
+  const gameMode = value.gameMode === 'maze' ? 'maze' : 'classic';
   const boardSize = toSafeInteger(value.boardSize, 10, 5, 25);
   const customMoveLimit = Boolean(value.customMoveLimit);
   const moveLimit = toSafeInteger(value.moveLimit, 20, 5, 100);
 
   return {
+    gameMode,
     boardSize,
     customMoveLimit,
     moveLimit,
@@ -93,6 +125,7 @@ function sanitizeLastGameConfig(value) {
         rows,
         columns,
         maxSteps,
+        mode: difficulty.mode === 'maze' ? 'maze' : 'classic',
       },
     };
   }
@@ -105,6 +138,32 @@ function sanitizeLastGameConfig(value) {
   }
 
   return null;
+}
+
+function sanitizeRecentMazeModes(value) {
+  if (!Array.isArray(value)) return [];
+
+  const list = [];
+  for (const item of value) {
+    if (!isPlainObject(item)) continue;
+    const rows = toSafeInteger(item.rows, 0, 1, 25);
+    const columns = toSafeInteger(item.columns, 0, 1, 25);
+    const maxSteps = toSafeInteger(item.maxSteps ?? 0, 0, 0, 500);
+    const mode = item.mode === 'maze' ? 'maze' : 'classic';
+    if (mode !== 'maze') continue;
+
+    list.push({
+      name: typeof item.name === 'string' && item.name.length > 0 ? item.name : 'Maze',
+      rows,
+      columns,
+      maxSteps,
+      mode,
+    });
+
+    if (list.length >= 3) break;
+  }
+
+  return list;
 }
 
 export function sanitizePersistedSnapshot(raw) {
@@ -123,6 +182,7 @@ export function sanitizePersistedSnapshot(raw) {
     showCustomMode: Boolean(data.showCustomMode),
     lastGameConfig: sanitizeLastGameConfig(data.lastGameConfig),
     customSettings: sanitizeCustomSettings(data.customSettings),
+    recentMazeModes: sanitizeRecentMazeModes(data.recentMazeModes),
   };
 }
 
@@ -147,6 +207,7 @@ function toPersistedData(state) {
     showCustomMode: state.showCustomMode,
     lastGameConfig: state.lastGameConfig,
     customSettings: state.customSettings,
+    recentMazeModes: state.recentMazeModes,
   };
 }
 

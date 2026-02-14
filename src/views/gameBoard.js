@@ -50,12 +50,20 @@ export function renderGameBoard({ board }) {
   for (let r = 0; r < board.rows; r++) {
     for (let c = 0; c < board.columns; c++) {
       const color = board.matrix[r][c];
+      const isWall = Boolean(board.walls?.[r]?.[c]);
+      const isGoal = board.goal?.row === r && board.goal?.column === c;
+      const cellClasses = ['board-cell'];
+      if (isWall) cellClasses.push('board-cell--wall');
+      if (isGoal) cellClasses.push('board-cell--goal');
       grid.appendChild(
         h('div', {
-          className: 'board-cell',
+          className: cellClasses.join(' '),
           'data-color': color,
+          'data-wall': isWall ? 'true' : 'false',
+          'data-goal': isGoal ? 'true' : 'false',
+          title: isGoal ? 'Goal' : undefined,
           style: {
-            backgroundColor: COLOR_HEX[color] || '#9ca3af',
+            backgroundColor: isWall ? '#1f2937' : (COLOR_HEX[color] || '#9ca3af'),
           },
         }),
       );

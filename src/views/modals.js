@@ -1,4 +1,6 @@
 import { h } from './dom.js';
+import { X } from 'lucide';
+import { renderIcon } from './icons.js';
 
 let modalId = 0;
 
@@ -116,6 +118,7 @@ export function renderConfirmDialog({ isOpen, title, message, onClose, onConfirm
 export function renderGameOverModal({ isOpen, hasWon, board, onClose, onNewGame }) {
   if (!board) return null;
 
+  const isMaze = board.mode === 'maze' || Boolean(board.goal);
   const stateClass = isOpen ? 'is-open' : 'is-closed';
   const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const { titleId, descriptionId } = createDialogIds('gameover-dialog');
@@ -147,7 +150,7 @@ export function renderGameOverModal({ isOpen, hasWon, board, onClose, onNewGame 
         onClick: closeAndRestore,
         className: 'modal__close',
         'aria-label': 'Close game over dialog',
-      }, ['×']),
+      }, [renderIcon(X, { className: 'ui-icon modal__close-icon' })]),
       h('div', { className: 'modal__content' }, [
         h('div', {
           id: titleId,
@@ -155,8 +158,12 @@ export function renderGameOverModal({ isOpen, hasWon, board, onClose, onNewGame 
         }, [hasWon ? 'You Won!' : 'Game Over']),
         h('p', { id: descriptionId, className: 'modal__lead' }, [
           hasWon
-            ? `Congratulations! You completed the board in ${board.step} moves!`
-            : 'You ran out of moves. The board was not completely flooded.',
+            ? isMaze
+              ? `Great run! You reached the maze goal in ${board.step} moves.`
+              : `Congratulations! You completed the board in ${board.step} moves!`
+            : isMaze
+              ? 'You ran out of moves before reaching the maze goal.'
+              : 'You ran out of moves. The board was not completely flooded.',
         ]),
         hasWon
           ? h('div', { className: 'modal__score' }, [

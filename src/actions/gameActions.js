@@ -2,13 +2,46 @@ import {
   DEFAULT_COLORS,
   AUTO_GENERATE_SEED,
   initializeBoard,
+  initializeMazeBoard,
   initializeCustomBoard,
   flood,
   getStepsLeft,
-  isAllFilled,
+  isBoardWon,
 } from '../engine/game.js';
 /** @typedef {import('../types/game.js').Difficulty} Difficulty */
 /** @typedef {import('../types/game.js').CustomGameSettings} CustomGameSettings */
+
+function difficultyKey(difficulty) {
+  return [
+    difficulty.name,
+    difficulty.rows,
+    difficulty.columns,
+    difficulty.maxSteps ?? 0,
+    difficulty.mode ?? 'classic',
+  ].join('|');
+}
+
+/**
+ * Track a small list of recently started maze modes for quick access in menus.
+ * @param {import('../types/game.js').Difficulty[]} previous
+ * @param {import('../types/game.js').Difficulty} mazeDifficulty
+ * @returns {import('../types/game.js').Difficulty[]}
+ */
+function pushRecentMazeMode(previous, mazeDifficulty) {
+  const next = [mazeDifficulty];
+  const seen = new Set([difficultyKey(mazeDifficulty)]);
+
+  for (const item of previous ?? []) {
+    if (item.mode !== 'maze') continue;
+    const key = difficultyKey(item);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    next.push(item);
+    if (next.length >= 3) break;
+  }
+
+  return next;
+}
 
 /**
  * Action factory that encapsulates all state transitions.
@@ -21,6 +54,7 @@ export function createActions(store) {
   function setCustomSettings(nextSettings) {
     store.update((s) => {
       if (
+        s.customSettings.gameMode === nextSettings.gameMode &&
         s.customSettings.boardSize === nextSettings.boardSize &&
         s.customSettings.customMoveLimit === nextSettings.customMoveLimit &&
         s.customSettings.moveLimit === nextSettings.moveLimit
@@ -50,13 +84,21 @@ export function createActions(store) {
    * @param {number} [seed]
    */
   function startNewGame(difficulty, seed = AUTO_GENERATE_SEED) {
-    const newBoard = initializeBoard(
-      difficulty.name,
-      difficulty.rows,
-      difficulty.columns,
-      seed,
-      difficulty.maxSteps || 0,
-    );
+    const newBoard = difficulty.mode === 'maze'
+      ? initializeMazeBoard(
+          difficulty.name,
+          difficulty.rows,
+          difficulty.columns,
+          seed,
+          difficulty.maxSteps || 0,
+        )
+      : initializeBoard(
+          difficulty.name,
+          difficulty.rows,
+          difficulty.columns,
+          seed,
+          difficulty.maxSteps || 0,
+        );
 
     store.update((s) => ({
       ...s,
@@ -65,6 +107,9 @@ export function createActions(store) {
       showCustomMode: false,
       showGameOverModal: false,
       lastGameConfig: { type: 'difficulty', difficulty },
+      recentMazeModes: difficulty.mode === 'maze'
+        ? pushRecentMazeMode(s.recentMazeModes, difficulty)
+        : s.recentMazeModes,
     }));
   }
 
@@ -73,7 +118,20 @@ export function createActions(store) {
    * @param {number} [seed]
    */
   function startCustomGame(settings, seed = AUTO_GENERATE_SEED) {
-    const newBoard = initializeCustomBoard(settings, seed);
+    const gameMode = settings.gameMode === 'maze' ? 'maze' : 'classic';
+    const normalizedSettings = {
+      ...settings,
+      gameMode,
+    };
+    const newBoard = gameMode === 'maze'
+      ? initializeMazeBoard(
+          'Custom Maze',
+          settings.boardSize,
+          settings.boardSize,
+          seed,
+          settings.moveLimit,
+        )
+      : initializeCustomBoard(normalizedSettings, seed);
 
     store.update((s) => ({
       ...s,
@@ -81,7 +139,16 @@ export function createActions(store) {
       selectedColor: '',
       showCustomMode: false,
       showGameOverModal: false,
-      lastGameConfig: { type: 'custom', settings },
+      lastGameConfig: { type: 'custom', settings: normalizedSettings },
+      recentMazeModes: gameMode === 'maze'
+        ? pushRecentMazeMode(s.recentMazeModes, {
+            name: 'Custom Maze',
+            rows: normalizedSettings.boardSize,
+            columns: normalizedSettings.boardSize,
+            maxSteps: normalizedSettings.moveLimit,
+            mode: 'maze',
+          })
+        : s.recentMazeModes,
     }));
   }
 
@@ -89,13 +156,21 @@ export function createActions(store) {
     const { board } = store.getState();
     if (!board) return;
 
-    const newBoard = initializeBoard(
-      board.name,
-      board.rows,
-      board.columns,
-      AUTO_GENERATE_SEED,
-      board.maxSteps,
-    );
+    const newBoard = board.mode === 'maze'
+      ? initializeMazeBoard(
+          board.name,
+          board.rows,
+          board.columns,
+          AUTO_GENERATE_SEED,
+          board.maxSteps,
+        )
+      : initializeBoard(
+          board.name,
+          board.rows,
+          board.columns,
+          AUTO_GENERATE_SEED,
+          board.maxSteps,
+        );
 
     store.update((s) => ({
       ...s,
@@ -138,7 +213,7 @@ export function createActions(store) {
       board: newBoard,
     }));
 
-    if (isAllFilled(newBoard)) {
+    if (isBoardWon(newBoard)) {
       return { success: true, gameState: 'won' };
     }
 

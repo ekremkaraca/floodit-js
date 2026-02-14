@@ -1,5 +1,5 @@
 import { h } from './dom.js';
-import { getStepsLeft, isAllFilled, DIFFICULTIES } from '../engine/game.js';
+import { getStepsLeft, isBoardWon, DIFFICULTIES } from '../engine/game.js';
 import { renderWelcome } from './welcome.js';
 import { renderCustomGameMode } from './customGameMode.js';
 import { renderGameBoard } from './gameBoard.js';
@@ -9,44 +9,65 @@ import { renderConfirmDialog, renderGameOverModal } from './modals.js';
 
 function getGameStatus(board) {
   const stepsLeft = getStepsLeft(board);
-  const isFilled = isAllFilled(board);
-  const isGameOver = isFilled || stepsLeft < 1;
+  // Unified win check keeps view logic mode-agnostic (classic vs maze).
+  const hasWon = isBoardWon(board);
+  const isGameOver = hasWon || stepsLeft < 1;
 
   return {
     stepsLeft,
-    isFilled,
     isGameOver,
-    hasWon: isFilled,
+    hasWon,
   };
 }
 
-function buildNewGameMenuItems(actions) {
-  return DIFFICULTIES.map((difficulty) =>
-    h('button', {
-      type: 'button',
-      className: 'menu-item',
-      onClick: () => {
-        if (difficulty.name === 'Custom') {
-          actions.openCustomMode();
-          return;
-        }
+function renderMenuItem(difficulty, actions) {
+  return h('button', {
+    type: 'button',
+    className: 'menu-item',
+    onClick: () => {
+      if (difficulty.name === 'Custom') {
+        actions.openCustomMode();
+        return;
+      }
 
-        const start = () => actions.startNewGame(difficulty);
-        actions.openConfirmDialog({
-          title: 'Start New Game?',
-          message: 'Starting a new game will end your current game. Continue?',
-          pendingAction: start,
-        });
-      },
-    }, [
-      h('div', { className: 'menu-item__title' }, [difficulty.name]),
-      h('div', { className: 'menu-item__meta' }, [
-        difficulty.name === 'Custom'
-          ? 'Configure board size and move limit'
-          : `${difficulty.rows}×${difficulty.columns}`,
-      ]),
+      const start = () => actions.startNewGame(difficulty);
+      actions.openConfirmDialog({
+        title: 'Start New Game?',
+        message: 'Starting a new game will end your current game. Continue?',
+        pendingAction: start,
+      });
+    },
+  }, [
+    h('div', { className: 'menu-item__title' }, [difficulty.name]),
+    h('div', { className: 'menu-item__meta' }, [
+      difficulty.name === 'Custom'
+        ? 'Configure board size and move limit'
+        : difficulty.mode === 'maze'
+          ? `${difficulty.rows}×${difficulty.columns} maze goal mode`
+        : `${difficulty.rows}×${difficulty.columns}`,
     ]),
-  );
+  ]);
+}
+
+function buildNewGameMenuItems(state, actions) {
+  const recentMazeModes = state.recentMazeModes ?? [];
+  const baseItems = DIFFICULTIES.map((difficulty) => renderMenuItem(difficulty, actions));
+
+  if (recentMazeModes.length === 0) {
+    return baseItems;
+  }
+
+  return [
+    h('div', { className: 'menu-section-title' }, ['Recent Maze Modes']),
+    ...recentMazeModes.map((difficulty) => (
+      h('div', { className: 'menu-recent-item' }, [
+        renderMenuItem(difficulty, actions),
+      ])
+    )),
+    h('div', { className: 'menu-divider', 'aria-hidden': 'true' }),
+    h('div', { className: 'menu-section-title' }, ['All Modes']),
+    ...baseItems,
+  ];
 }
 
 export function renderGameHeaderContent({ state, actions }) {
@@ -62,7 +83,7 @@ export function renderGameHeaderContent({ state, actions }) {
     stepsLeft,
     currentStep: board.step,
     maxSteps: board.maxSteps,
-    onNewGame: buildNewGameMenuItems(actions),
+    onNewGame: buildNewGameMenuItems(state, actions),
     onReset: () => {
       actions.openConfirmDialog({
         title: 'Reset Game?',

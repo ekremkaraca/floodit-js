@@ -7,10 +7,13 @@
     "build": "bun build ./src/index.html --outdir ./dist --minify",
     "preview": "NODE_ENV=production bun ./server.ts",
     "lint": "oxlint . --ignore-pattern dist",
-    "lint:fix": "oxlint . --fix --ignore-pattern dist"
+    "lint:fix": "oxlint . --fix --ignore-pattern dist",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "lucide": "^0.564.0"
   },
   "devDependencies": {
     "oxlint": "^1.47.0"
-  },
-  "peerDependencies": {}
+  }
 }

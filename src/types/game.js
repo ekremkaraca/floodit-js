@@ -7,12 +7,15 @@
 /**
  * @typedef {Object} Board
  * @property {string} name
+ * @property {'classic' | 'maze'} [mode]
  * @property {number} seed
  * @property {number} rows
  * @property {number} columns
  * @property {number} step
  * @property {number} maxSteps
  * @property {string[][]} matrix
+ * @property {boolean[][]} [walls]
+ * @property {Position} [goal]
  */
 
 /**
@@ -27,10 +30,12 @@
  * @property {number} rows
  * @property {number} columns
  * @property {number} [maxSteps]
+ * @property {'classic' | 'maze'} [mode]
  */
 
 /**
  * @typedef {Object} CustomGameSettings
+ * @property {'classic' | 'maze'} gameMode
  * @property {number} boardSize
  * @property {boolean} customMoveLimit
  * @property {number} moveLimit

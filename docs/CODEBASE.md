@@ -26,7 +26,7 @@ There is no framework runtime. Rendering is plain DOM creation using a helper fu
 - `src/engine/game.js`
   - Pure game rules and board operations.
   - Defines color set (`DEFAULT_COLORS`), seed sentinel (`AUTO_GENERATE_SEED`), and preset difficulties (`DIFFICULTIES`).
-  - Exposes board creation, flood fill, step counting, win checks.
+  - Exposes classic board creation, maze board creation, flood fill, step counting, and unified win checks.
   - Uses shared JSDoc type contracts from `src/types/game.js`.
 
 - `src/state/store.js`
@@ -60,12 +60,24 @@ There is no framework runtime. Rendering is plain DOM creation using a helper fu
 - `isDarkMode`: current theme flag.
 - `customSettings`: `{ boardSize, customMoveLimit, moveLimit }`.
 
+### Board Model Notes
+
+`board` supports both classic and maze modes:
+
+- Shared fields: `name`, `seed`, `rows`, `columns`, `step`, `maxSteps`, `matrix`
+- Optional mode field: `mode` (`classic` or `maze`)
+- Maze-only fields:
+  - `walls`: `boolean[][]` where `true` blocks flood expansion
+  - `goal`: `{ row, column }` target position (currently bottom-right)
+
 ## Game Lifecycle
 
 ### Start Flow
 
 1. User chooses a difficulty or custom settings.
-2. Action creates board (`initializeBoard` or `initializeCustomBoard`).
+2. Action creates board:
+   - classic presets/custom use `initializeBoard`/`initializeCustomBoard`
+   - maze presets use `initializeMazeBoard`
 3. Store receives board and resets transient UI flags.
 4. App re-renders into gameplay view.
 
@@ -74,12 +86,16 @@ There is no framework runtime. Rendering is plain DOM creation using a helper fu
 1. User selects a color.
 2. `actions.makeMove(color)` validates move and steps left.
 3. `flood(board, color)` returns updated board with incremented `step`.
+   - In maze mode, flood expansion cannot cross `walls`.
 4. Action stores new board and returns one of:
    - `{ success: true, gameState: "playing" }`
    - `{ success: true, gameState: "won" }`
    - `{ success: true, gameState: "lost" }`
    - `{ success: false, gameState: null | "lost" }` for invalid/no-op/blocked input.
-5. View opens game-over modal on `won`/`lost`.
+5. Win is evaluated by `isBoardWon(board)`:
+   - classic: `isAllFilled(board)`
+   - maze: `isGoalReached(board)`
+6. View opens game-over modal on `won`/`lost`.
 
 ### Confirmed Actions
 
@@ -102,6 +118,7 @@ Current rendering strategy uses a hybrid approach:
 - Render work is requestAnimationFrame-batched (`scheduleRender`) in `src/main.js`.
 - For gameplay-only updates, the renderer patches specific slots (`game-header`, `game-board`, `color-keyboard`) instead of remounting the entire app.
 - Board patching includes an in-place fast path that updates existing `.board-cell` backgrounds only when cell colors change.
+  - Wall cells are skipped during color patching because they are structural tiles.
 - Full remount is retained as a safe fallback for structural UI transitions (welcome/custom mode/dialog/game-over visibility changes).
 
 Layout-sensitive components self-adjust after mount:
@@ -144,6 +161,7 @@ Shortcuts are ignored when:
 
 - Shared domain contracts are documented in `src/types/game.js` via JSDoc typedefs.
 - Core logic modules import these typedefs in JSDoc (`import('../types/game.js')`) for editor/type-hint support while staying plain JavaScript.
+- Maze fields are also documented there (`mode`, `walls`, `goal`).
 
 ## Quality Gates
 
