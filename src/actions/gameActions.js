@@ -4,10 +4,8 @@ import {
   initializeBoard,
   initializeMazeBoard,
   initializeCustomBoard,
-  flood,
-  getStepsLeft,
-  isBoardWon,
 } from '../engine/game.js';
+import { resolveMove, resolveRoundStartTarget } from '../engine/gameFlow.js';
 /** @typedef {import('../types/game.js').Difficulty} Difficulty */
 /** @typedef {import('../types/game.js').CustomGameSettings} CustomGameSettings */
 
@@ -184,6 +182,7 @@ export function createActions(store) {
     store.update((s) => ({
       ...s,
       board: null,
+      showHelpPage: false,
       selectedColor: '',
       showCustomMode: false,
       showGameOverModal: false,
@@ -198,30 +197,16 @@ export function createActions(store) {
    */
   function makeMove(colorName) {
     const { board } = store.getState();
-    if (!board || getStepsLeft(board) < 1) {
-      return { success: false, gameState: 'lost' };
+    const { nextBoard, result } = resolveMove(board, colorName);
+
+    if (nextBoard !== board) {
+      store.update((s) => ({
+        ...s,
+        board: nextBoard,
+      }));
     }
 
-    if (board.matrix[0][0] === colorName) {
-      return { success: false, gameState: null };
-    }
-
-    const newBoard = flood(board, colorName);
-
-    store.update((s) => ({
-      ...s,
-      board: newBoard,
-    }));
-
-    if (isBoardWon(newBoard)) {
-      return { success: true, gameState: 'won' };
-    }
-
-    if (getStepsLeft(newBoard) < 1) {
-      return { success: true, gameState: 'lost' };
-    }
-
-    return { success: true, gameState: 'playing' };
+    return result;
   }
 
   function openCustomMode() {
@@ -230,6 +215,14 @@ export function createActions(store) {
 
   function closeCustomMode() {
     store.update((s) => ({ ...s, showCustomMode: false }));
+  }
+
+  function openHelpPage() {
+    store.update((s) => ({ ...s, showHelpPage: true }));
+  }
+
+  function closeHelpPage() {
+    store.update((s) => ({ ...s, showHelpPage: false }));
   }
 
   function openGameOverModal() {
@@ -276,25 +269,18 @@ export function createActions(store) {
    */
   function startNewRoundWithCurrentSettings() {
     const { lastGameConfig, board } = store.getState();
+    const target = resolveRoundStartTarget(lastGameConfig, board);
 
-    if (lastGameConfig?.type === 'difficulty') {
-      startNewGame(lastGameConfig.difficulty);
+    if (!target) {
       return;
     }
 
-    if (lastGameConfig?.type === 'custom') {
-      startCustomGame(lastGameConfig.settings);
+    if (target.type === 'difficulty') {
+      startNewGame(target.difficulty);
       return;
     }
 
-    if (board) {
-      startNewGame({
-        name: board.name,
-        rows: board.rows,
-        columns: board.columns,
-        maxSteps: board.maxSteps,
-      });
-    }
+    startCustomGame(target.settings);
   }
 
   /**
@@ -329,6 +315,8 @@ export function createActions(store) {
     makeMove,
     openCustomMode,
     closeCustomMode,
+    openHelpPage,
+    closeHelpPage,
     openGameOverModal,
     closeGameOverModal,
     openConfirmDialog,

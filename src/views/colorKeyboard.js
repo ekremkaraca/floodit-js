@@ -21,12 +21,23 @@ export function renderColorKeyboard({ colors, selectedColor, disabled, onColorSe
           : [56, 32];
 
   function getLayout(containerWidth) {
-    const keyboardWidth = Math.max(320, Math.min(containerWidth * 0.92, 540));
+    const viewportWidth = document.documentElement.clientWidth;
+    const viewportHeight = document.documentElement.clientHeight;
+    const isMobile = viewportWidth > 0 && viewportWidth < 640;
+    const isTinyMobile = isMobile && viewportHeight > 0 && viewportHeight <= 760;
+    const isUltraFitDesktop = viewportWidth >= 1024 && viewportHeight > 0 && viewportHeight <= 860;
+    const keyboardWidth = Math.max(isMobile ? 260 : 320, Math.min(containerWidth * 0.92, 540));
     const columns = keyboardWidth < 420 ? 3 : Math.min(colors.length, 6);
-    const gap = boardSize > 0 && boardSize <= 100 ? 10 : 8;
+    const baseGap = boardSize > 0 && boardSize <= 100 ? 8 : 6;
+    const gap = isUltraFitDesktop || isTinyMobile ? Math.max(3, baseGap - 3) : isMobile ? Math.max(4, baseGap - 2) : baseGap;
+
+    const sizeScale = isUltraFitDesktop ? 0.84 : isTinyMobile ? 0.74 : isMobile ? 0.82 : 1;
+    const scaledMaxSize = Math.floor(maxSize * sizeScale);
+    const scaledMinSize = Math.floor(minSize * sizeScale);
+
     const totalGap = gap * (columns - 1);
     const sizeFromWidth = Math.floor((keyboardWidth - totalGap) / columns);
-    const size = Math.max(minSize, Math.min(maxSize, sizeFromWidth));
+    const size = Math.max(scaledMinSize, Math.min(scaledMaxSize, sizeFromWidth));
     const maxRowWidth = columns * size + totalGap;
     return { gap, size, maxRowWidth };
   }

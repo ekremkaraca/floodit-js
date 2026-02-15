@@ -9,6 +9,7 @@ The app follows a simple unidirectional flow:
 1. User interacts with UI elements rendered from `src/views/*`.
 2. View callbacks call action functions from `src/actions/gameActions.js`.
 3. Actions compute next state (often using `src/engine/game.js`) and update the store (`src/state/store.js`).
+   - Flow-only rules are centralized in `src/engine/gameFlow.js`.
 4. Store subscribers schedule render and persistence work in `src/main.js`.
 5. Renderer applies targeted slot patches for gameplay updates when possible, with full remount fallback for structural transitions.
 
@@ -29,6 +30,11 @@ There is no framework runtime. Rendering is plain DOM creation using a helper fu
   - Exposes classic board creation, maze board creation, flood fill, step counting, and unified win checks.
   - Uses shared JSDoc type contracts from `src/types/game.js`.
 
+- `src/engine/gameFlow.js`
+  - Pure action-independent game flow helpers.
+  - Resolves move outcomes (`playing`/`won`/`lost`/no-op) and next-round start targets.
+  - Keeps branching logic out of action orchestration and enables focused unit testing.
+
 - `src/state/store.js`
   - Tiny pub/sub store with `getState`, `setState`, `update`, and `subscribe`.
   - Includes no-op guards: `setState`/`update` do not emit if the next state reference is unchanged.
@@ -36,14 +42,14 @@ There is no framework runtime. Rendering is plain DOM creation using a helper fu
 
 - `src/actions/gameActions.js`
   - Orchestrates state transitions for all user intents.
-  - Bridges the pure engine with UI state (modals, dark mode, current selection).
+  - Bridges pure engine modules with UI state (modals, dark mode, help page, current selection).
   - Returns game progression metadata from `makeMove`.
   - Includes `setCustomSettings` for immutable custom-mode updates via store.
 
 - `src/views/*`
   - Stateless render functions that build DOM nodes from `{ state, actions }` or explicit props.
   - `appView.js` composes all feature views.
-  - `modals.js`, `welcome.js`, `customGameMode.js`, `gameHeader.js`, `gameBoard.js`, `colorKeyboard.js` implement specific UI sections.
+  - `modals.js`, `welcome.js`, `helpRules.js`, `customGameMode.js`, `gameHeader.js`, `gameBoard.js`, `colorKeyboard.js` implement specific UI sections.
 
 ## State Shape
 
@@ -51,6 +57,7 @@ There is no framework runtime. Rendering is plain DOM creation using a helper fu
 
 - `board`: active board or `null`.
 - `selectedColor`: last user-selected color name.
+- `showHelpPage`: whether Help & Rules screen is active.
 - `showCustomMode`: whether custom game setup screen is active.
 - `showGameOverModal`: whether game-over modal is visible.
 - `showConfirmDialog`: whether confirm dialog is visible.
@@ -58,7 +65,7 @@ There is no framework runtime. Rendering is plain DOM creation using a helper fu
 - `confirmDialogContent`: `{ title, message }`.
 - `lastGameConfig`: last game setup metadata (`difficulty` or `custom`) used to start a new round.
 - `isDarkMode`: current theme flag.
-- `customSettings`: `{ boardSize, customMoveLimit, moveLimit }`.
+- `customSettings`: `{ gameMode, boardSize, customMoveLimit, moveLimit }`.
 
 ### Board Model Notes
 
@@ -84,7 +91,7 @@ There is no framework runtime. Rendering is plain DOM creation using a helper fu
 ### Move Flow
 
 1. User selects a color.
-2. `actions.makeMove(color)` validates move and steps left.
+2. `actions.makeMove(color)` delegates to `resolveMove(board, color)` in `src/engine/gameFlow.js`.
 3. `flood(board, color)` returns updated board with incremented `step`.
    - In maze mode, flood expansion cannot cross `walls`.
 4. Action stores new board and returns one of:
@@ -111,6 +118,13 @@ Reset/new/quit flows use the shared confirm dialog:
 - This is implemented by passing `AUTO_GENERATE_SEED` into `initializeBoard`.
 - If deterministic replay is needed, pass an explicit numeric seed to `startNewGame`/`startCustomGame`.
 
+### Help Screen Flow
+
+1. Help can be opened from welcome or in-game header.
+   - Welcome header action row exposes Help, Dark Mode toggle, and Source link as icon buttons.
+2. `showHelpPage` switches root rendering to `renderHelpRules(...)`.
+3. Back action closes help and restores previous context (welcome or game).
+
 ## Rendering Strategy
 
 Current rendering strategy uses a hybrid approach:
@@ -127,9 +141,12 @@ Layout-sensitive components self-adjust after mount:
   - Uses `ResizeObserver` + RAF layout scheduling.
   - Applies a concrete initial pixel size before first paint.
   - Caches the last computed size per board dimensions to prevent visual "relaunch/grow" on move remounts.
+  - Includes mode-aware board legend and start/goal markers (`S`/`G`).
+  - Uses tighter viewport heuristics for tiny mobile and short desktop heights.
 - `src/views/colorKeyboard.js`
   - Uses `ResizeObserver` + RAF layout scheduling.
   - Applies a concrete initial layout (gap/maxWidth/key size) before first paint to avoid one-frame disappearing.
+  - Scales spacing and key sizes for tiny mobile and ultra-fit desktop viewports.
 
 Practical outcome:
 - Move interactions avoid full app remounts in the normal gameplay path.
@@ -154,6 +171,7 @@ Shortcuts are ignored when:
 
 - No active board.
 - Custom mode or confirm dialog is open.
+- Help page is open.
 - Focus is in input/textarea/select/contentEditable.
 - Ctrl/Meta is also pressed.
 
@@ -169,10 +187,13 @@ Shortcuts are ignored when:
 - Build: `bun run build`
 - Tests: `bun test` (suite lives under `tests/`).
 
+Current snapshot:
+- `bun test`: 39 passing tests across engine/actions/state modules
+
 ## Recommended First Files for New Contributors
 
 1. `src/main.js`
 2. `src/views/appView.js`
 3. `src/actions/gameActions.js`
 4. `src/engine/game.js`
-5. `src/state/store.js`
+5. `src/engine/gameFlow.js`

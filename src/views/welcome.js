@@ -1,9 +1,11 @@
 import { clear, h } from "./dom.js";
 import { DIFFICULTIES } from "../engine/game.js";
-import { ChevronRight, SquareCode } from "lucide";
+import { ChevronRight, SquareCode, CircleQuestionMark, Moon, Sun } from "lucide";
 import { renderIcon } from "./icons.js";
 
 export function renderWelcome({ actions }) {
+  const { isDarkMode } = actions.store.getState();
+
   const HOW_TO_BY_MODE = {
     classic: [
       "Start from the top-left corner.",
@@ -39,6 +41,43 @@ export function renderWelcome({ actions }) {
 
           h("p", { className: "panel__intro" }, [
             "Choose a mode, then pick difficulty.",
+          ]),
+
+          h("div", { className: "welcome-header-actions" }, [
+            h(
+              "button",
+              {
+                type: "button",
+                onClick: () => actions.openHelpPage(),
+                className: "btn btn--subtle btn--icon",
+                title: "Open help and rules",
+                "aria-label": "Open help and rules",
+              },
+              [renderIcon(CircleQuestionMark)],
+            ),
+            h(
+              "button",
+              {
+                type: "button",
+                onClick: () => actions.toggleDarkMode(),
+                className: "btn btn--subtle btn--icon",
+                title: "Toggle dark mode",
+                "aria-label": "Toggle dark mode",
+              },
+              [isDarkMode ? renderIcon(Sun) : renderIcon(Moon)],
+            ),
+            h(
+              "a",
+              {
+                href: "https://github.com/ekremkaraca/floodit-js",
+                target: "_blank",
+                rel: "noopener,noreferrer",
+                className: "btn btn--subtle btn--icon",
+                title: "View source code on GitHub",
+                "aria-label": "View source code on GitHub",
+              },
+              [renderIcon(SquareCode)],
+            ),
           ]),
 
           h("div", { className: "welcome-tabs" }, [
@@ -152,21 +191,6 @@ export function renderWelcome({ actions }) {
             ]),
           ]),
 
-          h("div", { className: "panel__footer" }, [
-            h(
-              "a",
-              {
-                href: "https://github.com/ekremkaraca/floodit-js",
-                target: "_blank",
-                className: "link-button",
-                rel: "noopener,noreferrer",
-              },
-              [
-                renderIcon(SquareCode, { className: "ui-icon ui-icon--sm" }),
-                " View Source Code",
-              ],
-            ),
-          ]),
         ],
       ),
     ],

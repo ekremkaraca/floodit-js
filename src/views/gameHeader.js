@@ -1,5 +1,5 @@
 import { h } from "./dom.js";
-import { ChevronDown, SquareCode, Moon, Sun, RotateCcw } from "lucide";
+import { ChevronDown, SquareCode, Moon, Sun, RotateCcw, CircleHelp } from "lucide";
 import { renderIcon } from "./icons.js";
 
 export function renderGameHeader({
@@ -9,6 +9,7 @@ export function renderGameHeader({
   maxSteps,
   onNewGame,
   onReset,
+  onHelp,
   onToggleDarkMode,
   isDarkMode,
 }) {
@@ -22,6 +23,45 @@ export function renderGameHeader({
         : "steps-tone--danger";
 
   const progressPercentage = (currentStep / safeMaxSteps) * 100;
+
+  const newGameMenu = h("details", { className: "menu menu--newgame" }, [
+    h(
+      "summary",
+      {
+        className: "btn btn--new menu__trigger",
+      },
+      [
+        h("span", {}, ["New"]),
+        renderIcon(ChevronDown, {
+          className: "ui-icon menu__trigger-icon",
+        }),
+      ],
+    ),
+    h(
+      "div",
+      {
+        className: "menu__panel",
+      },
+      [h("div", { className: "menu__list" }, onNewGame)],
+    ),
+  ]);
+
+  function closeOnOutsideClick(event) {
+    if (!newGameMenu.isConnected) {
+      document.removeEventListener("mousedown", closeOnOutsideClick);
+      document.removeEventListener("touchstart", closeOnOutsideClick);
+      return;
+    }
+
+    if (!newGameMenu.open) return;
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+    if (newGameMenu.contains(target)) return;
+    newGameMenu.open = false;
+  }
+
+  document.addEventListener("mousedown", closeOnOutsideClick);
+  document.addEventListener("touchstart", closeOnOutsideClick);
 
   return h(
     "nav",
@@ -90,27 +130,7 @@ export function renderGameHeader({
                 className: "game-header__actions",
               },
               [
-                h("details", { className: "menu menu--newgame" }, [
-                  h(
-                    "summary",
-                    {
-                      className: "btn btn--new menu__trigger",
-                    },
-                    [
-                      h("span", {}, ["New"]),
-                      renderIcon(ChevronDown, {
-                        className: "ui-icon menu__trigger-icon",
-                      }),
-                    ],
-                  ),
-                  h(
-                    "div",
-                    {
-                      className: "menu__panel",
-                    },
-                    [h("div", { className: "menu__list" }, onNewGame)],
-                  ),
-                ]),
+                newGameMenu,
 
                 h(
                   "button",
@@ -134,6 +154,18 @@ export function renderGameHeader({
                     "aria-label": "Toggle dark mode",
                   },
                   [isDarkMode ? renderIcon(Sun) : renderIcon(Moon)],
+                ),
+
+                h(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: onHelp,
+                    className: "btn btn--neutral btn--icon",
+                    title: "Open help and rules",
+                    "aria-label": "Open help and rules",
+                  },
+                  [renderIcon(CircleHelp)],
                 ),
 
                 h(

@@ -6,6 +6,7 @@ function createInitialState() {
   return {
     board: null,
     selectedColor: '',
+    showHelpPage: false,
     showCustomMode: false,
     showGameOverModal: false,
     showConfirmDialog: false,
@@ -252,6 +253,16 @@ describe('actions/gameActions', () => {
     expect(state.board).toBeNull();
     expect(state.showConfirmDialog).toBe(false);
     expect(state.pendingAction).toBeNull();
+  });
+
+  test('openHelpPage and closeHelpPage toggle help screen state', () => {
+    const { store, actions } = createStoreAndActions();
+
+    actions.openHelpPage();
+    expect(store.getState().showHelpPage).toBe(true);
+
+    actions.closeHelpPage();
+    expect(store.getState().showHelpPage).toBe(false);
   });
 
   test('startNewGame tracks recent maze modes for new-game menu', () => {

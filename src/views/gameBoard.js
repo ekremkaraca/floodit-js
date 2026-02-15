@@ -10,15 +10,24 @@ export function renderGameBoard({ board }) {
   const wrapper = h('div', {
     className: 'board-wrap',
   });
+  const stack = h('div', { className: 'board-wrap__stack' });
   const cacheKey = `${board.rows}x${board.columns}`;
 
-  function getGridSize(availableWidth) {
-    const viewportWidth = document.documentElement.clientWidth * 0.9;
-    const isDesktop = document.documentElement.clientWidth >= 1024;
-    const viewportHeight = document.documentElement.clientHeight * (isDesktop ? 0.65 : 0.9);
+  function getGridSize(availableWidth, availableHeight) {
+    const viewport = document.documentElement;
+    const viewportWidthPx = viewport.clientWidth;
+    const viewportHeightPx = viewport.clientHeight;
+    const isDesktop = viewportWidthPx >= 1024;
+    const isMobile = viewportWidthPx > 0 && viewportWidthPx < 640;
+    const isTinyMobile = isMobile && viewportHeightPx > 0 && viewportHeightPx <= 760;
+    const isUltraFitDesktop = isDesktop && viewportHeightPx > 0 && viewportHeightPx <= 860;
+    const viewportWidth = (viewportWidthPx || 1000) * 0.9;
+    const viewportHeight = (viewportHeightPx || 1000) * (
+      isUltraFitDesktop ? 0.56 : isDesktop ? 0.62 : isTinyMobile ? 0.44 : isMobile ? 0.47 : 0.72
+    );
 
     const maxWidth = Math.min(availableWidth > 0 ? availableWidth : viewportWidth, viewportWidth, 900);
-    const maxHeight = Math.min(viewportHeight, 900);
+    const maxHeight = Math.min(availableHeight > 0 ? availableHeight : viewportHeight, viewportHeight, 900);
     const aspect = board.columns / board.rows;
 
     let width = maxWidth;
@@ -34,7 +43,7 @@ export function renderGameBoard({ board }) {
     };
   }
 
-  const initialSize = BOARD_SIZE_CACHE.get(cacheKey) || getGridSize(0);
+  const initialSize = BOARD_SIZE_CACHE.get(cacheKey) || getGridSize(0, 0);
   const grid = h('div', {
     className: 'board-grid',
     'data-rows': String(board.rows),
@@ -52,16 +61,19 @@ export function renderGameBoard({ board }) {
       const color = board.matrix[r][c];
       const isWall = Boolean(board.walls?.[r]?.[c]);
       const isGoal = board.goal?.row === r && board.goal?.column === c;
+      const isStart = r === 0 && c === 0;
       const cellClasses = ['board-cell'];
       if (isWall) cellClasses.push('board-cell--wall');
+      if (isStart) cellClasses.push('board-cell--start');
       if (isGoal) cellClasses.push('board-cell--goal');
       grid.appendChild(
         h('div', {
           className: cellClasses.join(' '),
           'data-color': color,
           'data-wall': isWall ? 'true' : 'false',
+          'data-start': isStart ? 'true' : 'false',
           'data-goal': isGoal ? 'true' : 'false',
-          title: isGoal ? 'Goal' : undefined,
+          title: isStart ? 'Start' : (isGoal ? 'Goal' : undefined),
           style: {
             backgroundColor: isWall ? '#1f2937' : (COLOR_HEX[color] || '#9ca3af'),
           },
@@ -75,7 +87,7 @@ export function renderGameBoard({ board }) {
     if (!wrapper.isConnected) return;
 
     const rect = wrapper.getBoundingClientRect();
-    const next = getGridSize(rect.width);
+    const next = getGridSize(rect.width, rect.height);
     BOARD_SIZE_CACHE.set(cacheKey, next);
     grid.style.width = `${next.width}px`;
     grid.style.height = `${next.height}px`;
@@ -97,6 +109,28 @@ export function renderGameBoard({ board }) {
   }
   scheduleLayout();
 
-  wrapper.appendChild(grid);
+  stack.appendChild(grid);
+  stack.appendChild(
+    h('div', { className: 'board-legend', 'aria-label': 'Board markers legend' }, [
+      h('div', { className: 'board-legend__markers' }, [
+        h('span', { className: 'board-legend__item' }, [
+          h('span', { className: 'board-legend__marker', 'aria-hidden': 'true' }, ['S']),
+          'Start',
+        ]),
+        board.mode === 'maze'
+          ? h('span', { className: 'board-legend__item' }, [
+              h('span', { className: 'board-legend__marker', 'aria-hidden': 'true' }, ['G']),
+              'Goal',
+            ])
+          : null,
+      ]),
+      h('div', { className: 'board-legend__target' }, [
+        board.mode === 'maze'
+          ? 'Target: reach the goal tile before moves run out.'
+          : 'Target: flood the entire board before moves run out.',
+      ]),
+    ]),
+  );
+  wrapper.appendChild(stack);
   return wrapper;
 }

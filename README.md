@@ -13,6 +13,19 @@
 - Maze: `Maze Easy`, `Maze Normal`, `Maze Hard`
 - `Custom`: choose board size and move limit (supports Classic and Maze)
 
+## Features
+
+- Start marker (`S`) on the top-left tile
+- Goal marker (`G`) in maze mode
+- In-game legend with mode-specific target hint
+- Dedicated Help & Rules screen
+- Confirmed actions (reset/new/quit)
+- Dark mode with persisted preference
+- Welcome header quick actions (Help, Dark Mode, Source) as icon buttons
+- Keyboard shortcuts: `Alt+Shift+R`, `Alt+Shift+N`, `Alt+Shift+Q`
+- Responsive board/keyboard fitting tuned for mobile, desktop, and short-height screens
+- Recent maze modes surfaced in New Game menu
+
 ## Setup
 
 ```bash
@@ -33,12 +46,19 @@ bun run test
 
 - `server.ts`: Bun server entry
 - `src/engine/game.js`: core flood logic + maze generation/win checks
+- `src/engine/gameFlow.js`: pure move/round-start flow decisions
 - `src/actions/gameActions.js`: game action orchestration
 - `src/state/*`: store + persistence
 - `src/views/*`: stateless UI renderers
 - `tests/*`: engine/actions/state tests
 - `docs/CODEBASE.md`: architecture and lifecycle details
 - `docs/PLAN.md`: implementation roadmap
+
+## Quality Gates
+
+- `bun run test`
+- `bun run lint`
+- `bun run build`
 
 ## License
 

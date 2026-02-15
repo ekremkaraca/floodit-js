@@ -2,6 +2,7 @@ import { h } from './dom.js';
 import { getStepsLeft, isBoardWon, DIFFICULTIES } from '../engine/game.js';
 import { renderWelcome } from './welcome.js';
 import { renderCustomGameMode } from './customGameMode.js';
+import { renderHelpRules } from './helpRules.js';
 import { renderGameBoard } from './gameBoard.js';
 import { renderColorKeyboard } from './colorKeyboard.js';
 import { renderGameHeader } from './gameHeader.js';
@@ -93,6 +94,7 @@ export function renderGameHeaderContent({ state, actions }) {
     },
     onToggleDarkMode: () => actions.toggleDarkMode(),
     isDarkMode: state.isDarkMode,
+    onHelp: () => actions.openHelpPage(),
   });
 }
 
@@ -136,6 +138,13 @@ export function renderColorKeyboardContent({ state, actions }) {
  * Root view composer. Chooses which screen to render from current state.
  */
 export function renderApp({ state, actions }) {
+  if (state.showHelpPage) {
+    return renderHelpRules({
+      onBack: () => actions.closeHelpPage(),
+      isInGame: Boolean(state.board),
+    });
+  }
+
   if (state.showCustomMode) {
     return renderCustomGameMode({ actions });
   }

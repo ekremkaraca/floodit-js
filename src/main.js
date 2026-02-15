@@ -28,6 +28,7 @@ const store = createStore({
   // Always land on welcome after refresh; do not auto-resume an active board.
   board: null,
   selectedColor: persisted?.selectedColor ?? '',
+  showHelpPage: false,
   showCustomMode: false,
   showGameOverModal: false,
   showConfirmDialog: false,
@@ -133,6 +134,7 @@ function patchGameView(state, plan) {
 function canPatchGameView(prev, next) {
   if (!prev || !next) return false;
   if (!prev.board || !next.board) return false;
+  if (prev.showHelpPage || next.showHelpPage) return false;
   if (prev.showCustomMode || next.showCustomMode) return false;
   if (prev.showConfirmDialog || next.showConfirmDialog) return false;
   if (prev.showGameOverModal || next.showGameOverModal) return false;
@@ -243,7 +245,7 @@ window.addEventListener('keydown', (event) => {
   const key = event.key.toLowerCase();
   const hasBoard = Boolean(state.board);
 
-  if (!hasBoard || state.showConfirmDialog || state.showCustomMode) {
+  if (!hasBoard || state.showConfirmDialog || state.showCustomMode || state.showHelpPage) {
     return;
   }
 
