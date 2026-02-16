@@ -51,6 +51,10 @@ There is no framework runtime. Rendering is plain DOM creation using a helper fu
   - `appView.js` composes all feature views.
   - `modals.js`, `welcome.js`, `helpRules.js`, `customGameMode.js`, `gameHeader.js`, `gameBoard.js`, `colorKeyboard.js` implement specific UI sections.
 
+- `src/styles/stylex*.js`
+  - Incremental StyleX style modules for targeted view-level layout rules.
+  - Current usage includes welcome header action row and help screen layout wrappers.
+
 ## State Shape
 
 `src/main.js` defines initial state:
@@ -155,9 +159,9 @@ Practical outcome:
 
 ## Styling Pipeline
 
-- Styling is maintained directly in `src/styles/app.css`.
-- There is no external CSS preprocessor step in dev/build scripts.
-- `src/main.js` imports `src/styles/app.css`.
+- Primary styling is maintained in `src/styles/app.css`.
+- Selected layout styles are defined with StyleX in `src/styles/stylex*.js`.
+- `src/main.js` imports `src/styles/app.css`; view modules apply StyleX props at render time.
 
 ## Keyboard Shortcuts
 

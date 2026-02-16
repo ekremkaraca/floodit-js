@@ -35,6 +35,10 @@ Build a maze-oriented FloodIt variant while keeping the existing engine/actions/
 - Help/learnability improvements:
   - dedicated `Help & Rules` screen (`src/views/helpRules.js`)
   - help entry points from welcome and in-game header
+- Styling architecture updates:
+  - removed Pico.css experiment and restored custom stylesheet pipeline
+  - started incremental StyleX adoption for targeted layout styles
+  - current StyleX coverage: welcome header actions + help screen layout wrappers
 - Responsive behavior improvements:
   - tighter board sizing for tiny mobile and short desktop heights
   - keyboard key-size/gap scaling tuned for constrained viewports

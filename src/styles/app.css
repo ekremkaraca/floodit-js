@@ -119,12 +119,65 @@ button {
 }
 
 .panel--welcome {
-  max-width: 34rem;
-  padding: 1.25rem 1.3rem;
+  max-width: 28rem;
+  padding: 1.05rem;
 }
 
 .panel--custom {
   max-width: 32rem;
+}
+
+.help-panel {
+  max-width: 28rem;
+  padding: 1rem;
+}
+
+.help-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.help-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.help-card {
+  border-radius: 0.7rem;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  padding: 0.7rem;
+}
+
+.help-card--wide {
+  grid-column: 1 / -1;
+}
+
+.help-card__title {
+  margin: 0 0 0.35rem;
+  color: var(--text-primary);
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+
+.help-card__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  display: grid;
+  gap: 0.28rem;
+}
+
+.help-shortcuts__item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 
 .mode-toggle {
@@ -168,8 +221,20 @@ button {
   font-size: clamp(1.8rem, 4vw, 2.3rem);
 }
 
+.panel__title--welcome {
+  margin: 0;
+  text-align: left;
+  font-size: clamp(1.9rem, 5vw, 2.25rem);
+}
+
 .panel__title--md {
   font-size: clamp(1.6rem, 3vw, 1.9rem);
+}
+
+.panel__title--help {
+  margin: 0;
+  text-align: left;
+  font-size: clamp(1.45rem, 3.2vw, 1.7rem);
 }
 
 .panel__section {
@@ -185,16 +250,25 @@ button {
 }
 
 .panel__intro {
-  margin: 0 0 0.8rem;
+  margin: 0 0 0.85rem;
   text-align: center;
   color: var(--text-secondary);
+  font-size: 0.92rem;
+}
+
+.welcome-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
 }
 
 .welcome-header-actions {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 0.45rem;
-  margin-bottom: 0.85rem;
+  margin: 0;
 }
 
 .panel__footer {
@@ -202,56 +276,10 @@ button {
   text-align: center;
 }
 
-.help-list,
-.shortcut-list,
 .difficulty-list {
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.help-list {
-  color: var(--text-secondary);
-  display: grid;
-  gap: 0.35rem;
-  font-size: 0.86rem;
-}
-
-.welcome-mode-help {
-  margin: 0 0 0.55rem;
-  color: var(--text-muted);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.help-list__item {
-  display: flex;
-  align-items: flex-start;
-}
-
-.help-list__marker {
-  color: var(--accent-purple);
-  margin-right: 0.55rem;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.shortcut-list {
-  color: var(--text-secondary);
-  display: grid;
-  gap: 0.4rem;
-  font-size: 0.82rem;
-}
-
-.shortcut-list__item {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
 }
 
 .kbd {
@@ -267,11 +295,23 @@ button {
 
 .difficulty-list {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.55rem;
+  margin-bottom: 0.15rem;
 }
 
 .difficulty-list__button {
   width: 100%;
+  min-height: 5rem;
+  padding: 0.6rem;
+  font-size: 0.84rem;
+  line-height: 1.25;
+  text-align: center;
+  transition: transform 0.18s var(--ease-out), filter 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background-color 0.2s var(--ease-out);
+}
+
+.difficulty-list__button:hover {
+  transform: translateY(-1px) scale(1.02);
 }
 
 .welcome-tabs {
@@ -319,27 +359,10 @@ button {
 }
 
 .welcome-tabs__note {
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.5rem;
   text-align: center;
   color: var(--text-muted);
-  font-size: 0.82rem;
-}
-
-.welcome-info-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.4rem;
-}
-
-@media (min-width: 760px) {
-  .welcome-info-grid {
-    grid-template-columns: 1fr 1fr;
-    column-gap: 1rem;
-  }
-
-  .welcome-info-grid .panel__section {
-    margin-bottom: 0.6rem;
-  }
+  font-size: 0.78rem;
 }
 
 .link-button {
@@ -360,24 +383,6 @@ button {
   outline: 2px solid var(--accent-blue);
   outline-offset: 3px;
   border-radius: 8px;
-}
-
-.panel--help {
-  max-width: 46rem;
-  padding: 1.4rem;
-}
-
-.help-header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.help-sections {
-  display: grid;
-  gap: 0.65rem;
 }
 
 .app-screen--game {
@@ -593,11 +598,6 @@ button {
   flex-shrink: 0;
 }
 
-.ui-icon--sm {
-  width: 0.85rem;
-  height: 0.85rem;
-}
-
 .btn--primary {
   background: linear-gradient(95deg, var(--accent-blue), var(--accent-purple));
 }
@@ -608,6 +608,14 @@ button {
 
 .btn--neutral {
   background: linear-gradient(90deg, #64748b, #475569);
+}
+
+.btn--help-back {
+  height: 2.05rem;
+  padding: 0 0.72rem;
+  border-radius: 0.6rem;
+  font-size: 0.78rem;
+  box-shadow: none;
 }
 
 .btn--danger {
@@ -1255,6 +1263,59 @@ button {
 }
 
 @media (max-width: 640px) {
+  .panel--welcome {
+    max-width: 27rem;
+    padding: 0.9rem;
+  }
+
+  .panel__title--welcome {
+    font-size: clamp(1.62rem, 7vw, 1.95rem);
+  }
+
+  .welcome-title-row {
+    align-items: flex-start;
+    gap: 0.55rem;
+  }
+
+  .welcome-header-actions {
+    gap: 0.35rem;
+  }
+
+  .difficulty-list__button {
+    min-height: 3.95rem;
+    font-size: 0.77rem;
+  }
+
+  .help-panel {
+    max-width: 27rem;
+    padding: 0.9rem;
+  }
+
+  .help-header-row {
+    margin-bottom: 0.6rem;
+  }
+
+  .help-sections {
+    grid-template-columns: 1fr;
+  }
+
+  .help-card--wide {
+    grid-column: auto;
+  }
+
+  .help-card__title {
+    font-size: 0.92rem;
+  }
+
+  .help-card__list {
+    font-size: 0.75rem;
+  }
+
+  .btn--help-back {
+    height: 2rem;
+    font-size: 0.75rem;
+  }
+
   .app-header-inner {
     padding: 0.2rem 0.35rem;
   }
@@ -1389,17 +1450,50 @@ button {
     line-height: 1.25;
   }
 
-  .panel--help {
-    padding: 1rem;
+}
+
+@media (max-width: 380px) {
+  .panel--welcome {
+    padding: 0.75rem;
+  }
+
+  .welcome-title-row {
+    gap: 0.4rem;
+  }
+
+  .welcome-tabs__button {
+    padding-inline: 0.55rem;
+    font-size: 0.82rem;
+  }
+
+  .welcome-tabs__note {
+    font-size: 0.72rem;
+  }
+
+  .difficulty-list {
+    gap: 0.45rem;
+  }
+
+  .difficulty-list__button {
+    min-height: 3.7rem;
+    padding: 0.45rem;
+    font-size: 0.74rem;
+  }
+
+  .help-panel {
+    padding: 0.75rem;
   }
 
   .help-header-row {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.5rem;
   }
-}
 
-@media (max-width: 380px) {
+  .btn--help-back {
+    width: 100%;
+  }
+
   .game-header__row {
     gap: 0.4rem;
   }

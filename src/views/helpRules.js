@@ -1,10 +1,25 @@
 import { h } from "./dom.js";
+import {
+  getHelpHeaderRowProps,
+  getHelpPanelProps,
+  getHelpSectionsProps,
+} from "../styles/stylexHelp.js";
 
 export function renderHelpRules({ onBack, isInGame }) {
+  const helpPanelProps = getHelpPanelProps();
+  const helpHeaderRowProps = getHelpHeaderRowProps();
+  const helpSectionsProps = getHelpSectionsProps();
+
   return h("div", { className: "app-screen app-screen--centered" }, [
-    h("div", { className: "panel panel--help" }, [
-      h("div", { className: "help-header-row" }, [
-        h("h1", { className: "panel__title panel__title--md" }, [
+    h("div", {
+      className: ["panel", helpPanelProps.className].filter(Boolean).join(" "),
+      style: helpPanelProps.style,
+    }, [
+      h("div", {
+        className: helpHeaderRowProps.className,
+        style: helpHeaderRowProps.style,
+      }, [
+        h("h1", { className: "panel__title panel__title--help" }, [
           "Help & Rules",
         ]),
         h(
@@ -12,44 +27,47 @@ export function renderHelpRules({ onBack, isInGame }) {
           {
             type: "button",
             onClick: onBack,
-            className: "btn btn--neutral",
+            className: "btn btn--neutral btn--help-back",
           },
           [isInGame ? "Back to Game" : "Back"],
         ),
       ]),
 
-      h("div", { className: "help-sections" }, [
-        h("section", { className: "panel__section" }, [
-          h("h2", { className: "panel__section-title" }, ["Objective"]),
-          h("ul", { className: "help-list" }, [
+      h("div", {
+        className: helpSectionsProps.className,
+        style: helpSectionsProps.style,
+      }, [
+        h("section", { className: "help-card" }, [
+          h("h2", { className: "help-card__title" }, ["Objective"]),
+          h("ul", { className: "help-card__list" }, [
             h("li", {}, ["Classic: flood the entire board into one color."]),
             h("li", {}, ["Maze: reach the goal tile before moves run out."]),
           ]),
         ]),
 
-        h("section", { className: "panel__section" }, [
-          h("h2", { className: "panel__section-title" }, ["How to Play"]),
-          h("ul", { className: "help-list" }, [
-            h("li", {}, ["The flooded area always starts from the top-left tile."]),
-            h("li", {}, ["Pick a color from the bottom palette each move."]),
-            h("li", {}, ["In maze mode, walls block flood expansion and G marks the goal."]),
+        h("section", { className: "help-card" }, [
+          h("h2", { className: "help-card__title" }, ["How to Play"]),
+          h("ul", { className: "help-card__list" }, [
+            h("li", {}, ["The flooded area always starts at top-left."]),
+            h("li", {}, ["Pick one color per move from the palette."]),
+            h("li", {}, ["Walls block flood expansion in maze mode."]),
           ]),
         ]),
 
-        h("section", { className: "panel__section" }, [
-          h("h2", { className: "panel__section-title" }, ["Controls"]),
-          h("ul", { className: "shortcut-list" }, [
-            h("li", { className: "shortcut-list__item" }, [
-              h("span", {}, ["Reset current game"]),
+        h("section", { className: "help-card help-card--wide" }, [
+          h("h2", { className: "help-card__title" }, ["Keyboard Shortcuts"]),
+          h("ul", { className: "help-card__list help-shortcuts" }, [
+            h("li", { className: "help-shortcuts__item" }, [
               h("kbd", { className: "kbd" }, ["Alt+Shift+R"]),
+              h("span", {}, ["Reset current game"]),
             ]),
-            h("li", { className: "shortcut-list__item" }, [
-              h("span", {}, ["New board with current settings"]),
+            h("li", { className: "help-shortcuts__item" }, [
               h("kbd", { className: "kbd" }, ["Alt+Shift+N"]),
+              h("span", {}, ["New game with current settings"]),
             ]),
-            h("li", { className: "shortcut-list__item" }, [
-              h("span", {}, ["Quit to welcome screen"]),
+            h("li", { className: "help-shortcuts__item" }, [
               h("kbd", { className: "kbd" }, ["Alt+Shift+Q"]),
+              h("span", {}, ["Quit to welcome screen"]),
             ]),
           ]),
         ]),

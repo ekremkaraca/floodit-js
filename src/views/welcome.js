@@ -1,23 +1,12 @@
 import { clear, h } from "./dom.js";
 import { DIFFICULTIES } from "../engine/game.js";
-import { ChevronRight, SquareCode, CircleQuestionMark, Moon, Sun } from "lucide";
+import { SquareCode, CircleQuestionMark, Moon, Sun } from "lucide";
 import { renderIcon } from "./icons.js";
+import { getWelcomeHeaderActionsProps } from "../styles/stylexWelcome.js";
 
 export function renderWelcome({ actions }) {
   const { isDarkMode } = actions.store.getState();
-
-  const HOW_TO_BY_MODE = {
-    classic: [
-      "Start from the top-left corner.",
-      "Pick a color to expand your area.",
-      "Fill the whole board before moves run out.",
-    ],
-    maze: [
-      "Start from the top-left corner.",
-      "Walls block flood expansion.",
-      "Reach the goal tile (G) before moves run out.",
-    ],
-  };
+  const welcomeHeaderActionsProps = getWelcomeHeaderActionsProps();
 
   const root = h(
     "div",
@@ -31,53 +20,53 @@ export function renderWelcome({ actions }) {
           className: "panel panel--welcome",
         },
         [
-          h(
-            "h1",
-            {
-              className: "panel__title",
-            },
-            ["Flood It"],
-          ),
-
-          h("p", { className: "panel__intro" }, [
-            "Choose a mode, then pick difficulty.",
-          ]),
-
-          h("div", { className: "welcome-header-actions" }, [
+          h("div", { className: "welcome-title-row" }, [
             h(
-              "button",
+              "h1",
               {
-                type: "button",
-                onClick: () => actions.openHelpPage(),
-                className: "btn btn--subtle btn--icon",
-                title: "Open help and rules",
-                "aria-label": "Open help and rules",
+                className: "panel__title panel__title--welcome",
               },
-              [renderIcon(CircleQuestionMark)],
+              ["Flood It"],
             ),
-            h(
-              "button",
-              {
-                type: "button",
-                onClick: () => actions.toggleDarkMode(),
-                className: "btn btn--subtle btn--icon",
-                title: "Toggle dark mode",
-                "aria-label": "Toggle dark mode",
-              },
-              [isDarkMode ? renderIcon(Sun) : renderIcon(Moon)],
-            ),
-            h(
-              "a",
-              {
-                href: "https://github.com/ekremkaraca/floodit-js",
-                target: "_blank",
-                rel: "noopener,noreferrer",
-                className: "btn btn--subtle btn--icon",
-                title: "View source code on GitHub",
-                "aria-label": "View source code on GitHub",
-              },
-              [renderIcon(SquareCode)],
-            ),
+            h("div", {
+              className: welcomeHeaderActionsProps.className,
+              style: welcomeHeaderActionsProps.style,
+            }, [
+              h(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => actions.openHelpPage(),
+                  className: "btn btn--subtle btn--icon",
+                  title: "Open help and rules",
+                  "aria-label": "Open help and rules",
+                },
+                [renderIcon(CircleQuestionMark)],
+              ),
+              h(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => actions.toggleDarkMode(),
+                  className: "btn btn--subtle btn--icon",
+                  title: "Toggle dark mode",
+                  "aria-label": "Toggle dark mode",
+                },
+                [isDarkMode ? renderIcon(Sun) : renderIcon(Moon)],
+              ),
+              h(
+                "a",
+                {
+                  href: "https://github.com/ekremkaraca/floodit-js",
+                  target: "_blank",
+                  rel: "noopener,noreferrer",
+                  className: "btn btn--subtle btn--icon",
+                  title: "View source code on GitHub",
+                  "aria-label": "View source code on GitHub",
+                },
+                [renderIcon(SquareCode)],
+              ),
+            ]),
           ]),
 
           h("div", { className: "welcome-tabs" }, [
@@ -122,75 +111,14 @@ export function renderWelcome({ actions }) {
               },
               ["Classic: fill all cells. Maze: reach the goal tile."],
             ),
-            h("div", {
-              className: "difficulty-list",
-              "data-mode-panel": "difficulty-list",
-            }),
           ]),
-          h("div", { className: "welcome-info-grid" }, [
-            h(
-              "div",
-              {
-                className: "panel__section",
-              },
-              [
-                h(
-                  "h2",
-                  {
-                    className: "panel__section-title",
-                  },
-                  ["How to Play"],
-                ),
-                h(
-                  "p",
-                  {
-                    className: "welcome-mode-help",
-                    "data-howto-mode": "label",
-                  },
-                  [],
-                ),
-                h(
-                  "ul",
-                  {
-                    className: "help-list",
-                    "data-howto-list": "items",
-                  },
-                  [],
-                ),
-              ],
-            ),
-
-            h("div", { className: "panel__section" }, [
-              h(
-                "h2",
-                {
-                  className: "panel__section-title",
-                },
-                ["Keyboard Shortcuts"],
-              ),
-              h(
-                "ul",
-                {
-                  className: "shortcut-list",
-                },
-                [
-                  h("li", { className: "shortcut-list__item" }, [
-                    h("span", {}, ["Reset current game"]),
-                    h("kbd", { className: "kbd" }, ["Alt+Shift+R"]),
-                  ]),
-                  h("li", { className: "shortcut-list__item" }, [
-                    h("span", {}, ["New game (current settings)"]),
-                    h("kbd", { className: "kbd" }, ["Alt+Shift+N"]),
-                  ]),
-                  h("li", { className: "shortcut-list__item" }, [
-                    h("span", {}, ["Quit to welcome screen"]),
-                    h("kbd", { className: "kbd" }, ["Alt+Shift+Q"]),
-                  ]),
-                ],
-              ),
-            ]),
+          h("p", { className: "panel__intro" }, [
+            "Choose your difficulty level to begin!",
           ]),
-
+          h("div", {
+            className: "difficulty-list",
+            "data-mode-panel": "difficulty-list",
+          }),
         ],
       ),
     ],
@@ -199,8 +127,6 @@ export function renderWelcome({ actions }) {
   const difficultyList = root.querySelector(
     '[data-mode-panel="difficulty-list"]',
   );
-  const howToList = root.querySelector('[data-howto-list="items"]');
-  const howToModeLabel = root.querySelector('[data-howto-mode="label"]');
   const tabButtons = Array.from(root.querySelectorAll("[data-mode-tab]"));
   let activeMode = "classic";
 
@@ -256,33 +182,11 @@ export function renderWelcome({ actions }) {
           [
             difficulty.name === "Custom"
               ? activeMode === "maze"
-                ? "Custom Maze (choose size and move limit)"
-                : "Custom (choose size and move limit)"
-              : difficulty.mode === "maze"
-                ? `${difficulty.name} (${difficulty.rows}×${difficulty.columns}) - reach goal`
-                : `${difficulty.name} (${difficulty.rows}×${difficulty.columns})`,
+                ? "Custom Maze"
+                : "Custom Classic"
+              : `${difficulty.name} (${difficulty.rows}×${difficulty.columns})`,
           ],
         ),
-      );
-    }
-  }
-
-  function renderHowTo() {
-    if (!(howToList instanceof HTMLElement)) return;
-    if (howToModeLabel instanceof HTMLElement) {
-      howToModeLabel.textContent =
-        activeMode === "maze" ? "Maze Mode" : "Classic Mode";
-    }
-
-    clear(howToList);
-    for (const item of HOW_TO_BY_MODE[activeMode]) {
-      howToList.appendChild(
-        h("li", { className: "help-list__item" }, [
-          h("span", { className: "help-list__marker" }, [
-            renderIcon(ChevronRight, { className: "ui-icon ui-icon--sm" }),
-          ]),
-          item,
-        ]),
       );
     }
   }
@@ -301,12 +205,10 @@ export function renderWelcome({ actions }) {
     if (activeMode === mode) return;
     activeMode = mode;
     updateTabUI();
-    renderHowTo();
     renderDifficultyButtons();
   }
 
   updateTabUI();
-  renderHowTo();
   renderDifficultyButtons();
 
   return root;
