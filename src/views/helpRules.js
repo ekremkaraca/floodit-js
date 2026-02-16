@@ -1,24 +1,11 @@
 import { h } from "./dom.js";
-import {
-  getHelpHeaderRowProps,
-  getHelpPanelProps,
-  getHelpSectionsProps,
-} from "../styles/stylexHelp.js";
 
 export function renderHelpRules({ onBack, isInGame }) {
-  const helpPanelProps = getHelpPanelProps();
-  const helpHeaderRowProps = getHelpHeaderRowProps();
-  const helpSectionsProps = getHelpSectionsProps();
-
   return h("div", { className: "app-screen app-screen--centered" }, [
     h("div", {
-      className: ["panel", helpPanelProps.className].filter(Boolean).join(" "),
-      style: helpPanelProps.style,
+      className: "panel help-panel",
     }, [
-      h("div", {
-        className: helpHeaderRowProps.className,
-        style: helpHeaderRowProps.style,
-      }, [
+      h("div", { className: "help-header-row" }, [
         h("h1", { className: "panel__title panel__title--help" }, [
           "Help & Rules",
         ]),
@@ -33,10 +20,7 @@ export function renderHelpRules({ onBack, isInGame }) {
         ),
       ]),
 
-      h("div", {
-        className: helpSectionsProps.className,
-        style: helpSectionsProps.style,
-      }, [
+      h("div", { className: "help-sections" }, [
         h("section", { className: "help-card" }, [
           h("h2", { className: "help-card__title" }, ["Objective"]),
           h("ul", { className: "help-card__list" }, [

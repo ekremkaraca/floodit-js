@@ -25,7 +25,6 @@
 - Keyboard shortcuts: `Alt+Shift+R`, `Alt+Shift+N`, `Alt+Shift+Q`
 - Responsive board/keyboard fitting tuned for mobile, desktop, and short-height screens
 - Recent maze modes surfaced in New Game menu
-- Incremental StyleX adoption for selected UI layout styles
 
 ## Setup
 
@@ -49,7 +48,6 @@ bun run test
 - `src/engine/game.js`: core flood logic + maze generation/win checks
 - `src/engine/gameFlow.js`: pure move/round-start flow decisions
 - `src/actions/gameActions.js`: game action orchestration
-- `src/styles/stylex*.js`: StyleX style modules for selected views
 - `src/state/*`: store + persistence
 - `src/views/*`: stateless UI renderers
 - `tests/*`: engine/actions/state tests

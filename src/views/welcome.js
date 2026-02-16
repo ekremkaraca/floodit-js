@@ -2,11 +2,9 @@ import { clear, h } from "./dom.js";
 import { DIFFICULTIES } from "../engine/game.js";
 import { SquareCode, CircleQuestionMark, Moon, Sun } from "lucide";
 import { renderIcon } from "./icons.js";
-import { getWelcomeHeaderActionsProps } from "../styles/stylexWelcome.js";
 
 export function renderWelcome({ actions }) {
   const { isDarkMode } = actions.store.getState();
-  const welcomeHeaderActionsProps = getWelcomeHeaderActionsProps();
 
   const root = h(
     "div",
@@ -28,10 +26,7 @@ export function renderWelcome({ actions }) {
               },
               ["Flood It"],
             ),
-            h("div", {
-              className: welcomeHeaderActionsProps.className,
-              style: welcomeHeaderActionsProps.style,
-            }, [
+            h("div", { className: "welcome-header-actions" }, [
               h(
                 "button",
                 {

@@ -11,7 +11,6 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@stylexjs/stylex": "^0.17.5",
     "lucide": "^0.564.0"
   },
   "devDependencies": {
