@@ -2,6 +2,33 @@ import { h } from "./dom.js";
 import { ChevronDown, SquareCode, Moon, Sun, RotateCcw, CircleHelp } from "lucide";
 import { renderIcon } from "./icons.js";
 
+let activeNewGameMenu = null;
+let outsideCloseListenersReady = false;
+
+function ensureOutsideCloseListeners() {
+  if (outsideCloseListenersReady) return;
+
+  const closeMenuOnOutsideInteraction = (event) => {
+    if (!activeNewGameMenu) return;
+    if (!activeNewGameMenu.isConnected || !activeNewGameMenu.open) {
+      activeNewGameMenu = null;
+      return;
+    }
+
+    const target = event.target;
+    if (target instanceof Node && activeNewGameMenu.contains(target)) {
+      return;
+    }
+
+    activeNewGameMenu.open = false;
+    activeNewGameMenu = null;
+  };
+
+  document.addEventListener("mousedown", closeMenuOnOutsideInteraction);
+  document.addEventListener("touchstart", closeMenuOnOutsideInteraction);
+  outsideCloseListenersReady = true;
+}
+
 export function renderGameHeader({
   boardName,
   stepsLeft,
@@ -23,6 +50,8 @@ export function renderGameHeader({
         : "steps-tone--danger";
 
   const progressPercentage = (currentStep / safeMaxSteps) * 100;
+
+  ensureOutsideCloseListeners();
 
   const newGameMenu = h("details", { className: "menu menu--newgame" }, [
     h(
@@ -46,22 +75,16 @@ export function renderGameHeader({
     ),
   ]);
 
-  function closeOnOutsideClick(event) {
-    if (!newGameMenu.isConnected) {
-      document.removeEventListener("mousedown", closeOnOutsideClick);
-      document.removeEventListener("touchstart", closeOnOutsideClick);
+  newGameMenu.addEventListener("toggle", () => {
+    if (newGameMenu.open) {
+      activeNewGameMenu = newGameMenu;
       return;
     }
 
-    if (!newGameMenu.open) return;
-    const target = event.target;
-    if (!(target instanceof Node)) return;
-    if (newGameMenu.contains(target)) return;
-    newGameMenu.open = false;
-  }
-
-  document.addEventListener("mousedown", closeOnOutsideClick);
-  document.addEventListener("touchstart", closeOnOutsideClick);
+    if (activeNewGameMenu === newGameMenu) {
+      activeNewGameMenu = null;
+    }
+  });
 
   return h(
     "nav",

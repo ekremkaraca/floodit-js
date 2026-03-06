@@ -100,6 +100,11 @@ export function renderConfirmDialog({ isOpen, title, message, onClose, onConfirm
           type: 'button',
           onClick: () => {
             onConfirm();
+            requestAnimationFrame(() => {
+              if (!root.isConnected && previouslyFocused && previouslyFocused.isConnected) {
+                previouslyFocused.focus();
+              }
+            });
           },
           className: 'btn btn--danger',
         }, ['Confirm']),

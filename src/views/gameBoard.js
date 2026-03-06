@@ -83,8 +83,13 @@ export function renderGameBoard({ board }) {
   }
 
   let rafId = 0;
+  let observer = null;
   function updateLayout() {
-    if (!wrapper.isConnected) return;
+    if (!wrapper.isConnected) {
+      observer?.disconnect();
+      observer = null;
+      return;
+    }
 
     const rect = wrapper.getBoundingClientRect();
     const next = getGridSize(rect.width, rect.height);
@@ -102,7 +107,7 @@ export function renderGameBoard({ board }) {
   }
 
   if (typeof ResizeObserver === 'function') {
-    const observer = new ResizeObserver(() => {
+    observer = new ResizeObserver(() => {
       scheduleLayout();
     });
     observer.observe(wrapper);
