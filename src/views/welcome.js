@@ -66,37 +66,34 @@ export function renderWelcome({ actions }) {
 
           h("div", { className: "welcome-tabs" }, [
             h(
-              "div",
+              "fieldset",
               {
-                className: "welcome-tabs__list",
-                role: "tablist",
-                "aria-label": "Game mode tabs",
+                className: "mode-picker mode-picker--welcome",
+                role: "radiogroup",
+                "aria-label": "Game mode",
               },
               [
-                h(
-                  "button",
-                  {
-                    type: "button",
-                    className: "welcome-tabs__button",
-                    role: "tab",
+                h("label", { className: "mode-picker__option" }, [
+                  h("input", {
+                    type: "radio",
+                    name: "welcome-mode",
+                    className: "mode-picker__input",
                     "data-mode-tab": "classic",
-                    "aria-selected": "true",
-                    onClick: () => setActiveMode("classic"),
-                  },
-                  ["Classic"],
-                ),
-                h(
-                  "button",
-                  {
-                    type: "button",
-                    className: "welcome-tabs__button",
-                    role: "tab",
+                    checked: "",
+                    onChange: () => setActiveMode("classic"),
+                  }),
+                  h("span", { className: "mode-picker__label" }, ["Classic"]),
+                ]),
+                h("label", { className: "mode-picker__option" }, [
+                  h("input", {
+                    type: "radio",
+                    name: "welcome-mode",
+                    className: "mode-picker__input",
                     "data-mode-tab": "maze",
-                    "aria-selected": "false",
-                    onClick: () => setActiveMode("maze"),
-                  },
-                  ["Maze"],
-                ),
+                    onChange: () => setActiveMode("maze"),
+                  }),
+                  h("span", { className: "mode-picker__label" }, ["Maze"]),
+                ]),
               ],
             ),
             h(
@@ -187,11 +184,10 @@ export function renderWelcome({ actions }) {
   }
 
   function updateTabUI() {
-    for (const button of tabButtons) {
-      if (!(button instanceof HTMLElement)) continue;
-      const isActive = button.dataset.modeTab === activeMode;
-      button.classList.toggle("is-active", isActive);
-      button.setAttribute("aria-selected", isActive ? "true" : "false");
+    for (const input of tabButtons) {
+      if (!(input instanceof HTMLInputElement)) continue;
+      const isActive = input.dataset.modeTab === activeMode;
+      input.checked = isActive;
     }
   }
 

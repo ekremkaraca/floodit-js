@@ -24,25 +24,41 @@ export function renderCustomGameMode({ actions }) {
   );
 
   panel.appendChild(
-    h("div", { className: "mode-toggle" }, [
-      h("button", {
-        type: "button",
-        className: `mode-toggle__button ${gameMode === "classic" ? "is-active" : ""}`,
-        onClick: () =>
-          actions.setCustomSettings({
-            ...settings,
-            gameMode: "classic",
-          }),
-      }, ["Classic"]),
-      h("button", {
-        type: "button",
-        className: `mode-toggle__button ${gameMode === "maze" ? "is-active" : ""}`,
-        onClick: () =>
-          actions.setCustomSettings({
-            ...settings,
-            gameMode: "maze",
-          }),
-      }, ["Maze"]),
+    h('fieldset', {
+      className: 'mode-picker',
+      role: 'radiogroup',
+      'aria-label': 'Game mode',
+    }, [
+      h('label', { className: 'mode-picker__option' }, [
+        h('input', {
+          type: 'radio',
+          name: 'custom-game-mode',
+          className: 'mode-picker__input',
+          checked: gameMode === 'classic' ? '' : undefined,
+          onChange: () => {
+            actions.setCustomSettings({
+              ...settings,
+              gameMode: 'classic',
+            });
+          },
+        }),
+        h('span', { className: 'mode-picker__label' }, ['Classic']),
+      ]),
+      h('label', { className: 'mode-picker__option' }, [
+        h('input', {
+          type: 'radio',
+          name: 'custom-game-mode',
+          className: 'mode-picker__input',
+          checked: gameMode === 'maze' ? '' : undefined,
+          onChange: () => {
+            actions.setCustomSettings({
+              ...settings,
+              gameMode: 'maze',
+            });
+          },
+        }),
+        h('span', { className: 'mode-picker__label' }, ['Maze']),
+      ]),
     ]),
   );
 
