@@ -78,8 +78,13 @@ export function renderColorKeyboard({ colors, selectedColor, disabled, onColorSe
   }
 
   let rafId = 0;
+  let observer = null;
   function updateLayout() {
-    if (!container.isConnected) return;
+    if (!container.isConnected) {
+      observer?.disconnect();
+      observer = null;
+      return;
+    }
 
     const containerWidth = container.getBoundingClientRect().width || document.documentElement.clientWidth;
     const layout = getLayout(containerWidth);
@@ -101,7 +106,7 @@ export function renderColorKeyboard({ colors, selectedColor, disabled, onColorSe
   }
 
   if (typeof ResizeObserver === 'function') {
-    const observer = new ResizeObserver(() => {
+    observer = new ResizeObserver(() => {
       scheduleLayout();
     });
     observer.observe(container);
